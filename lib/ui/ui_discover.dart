@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -9,11 +10,15 @@ import 'package:picole/src/discover.dart';
 import 'package:picole/src/preview.dart';
 import 'package:picole/tools/database.dart';
 
-Widget uiDiscover(BuildContext context, state) {
+Widget uiDiscover(BuildContext context, DiscoverPageState state) {
   List<double> viewportRect = [
     MediaQuery.of(context).size.width,
     MediaQuery.of(context).size.height
   ];
+
+  Future<void> onRefresh() async {
+    state.revokePosts();
+  }
 
   return AnnotatedRegion<SystemUiOverlayStyle>(
     value: SystemUiOverlayStyle(statusBarColor: Colors.transparent),
@@ -22,19 +27,31 @@ Widget uiDiscover(BuildContext context, state) {
       body: Stack(
         children: [
           _buildBackground(state),
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildHeader(context, state),
-                SizedBox(height: 32),
-                _buildFeaturedPost(viewportRect, state),
-                _buildFeeds(state, context),
-              ],
+          RefreshIndicator(
+            onRefresh: onRefresh,
+            child: SingleChildScrollView(
+              physics: AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  _buildHeader(context, state),
+                  SizedBox(height: 32),
+                  _buildFeaturedPost(viewportRect, state),
+                  _buildFeeds(state, context),
+                ],
+              ),
             ),
           ),
           _buildBottomNavBar(context),
         ],
       ),
+      floatingActionButton:
+          kIsWeb || Theme.of(context).platform == TargetPlatform.linux
+              ? FloatingActionButton(
+                  onPressed: onRefresh,
+                  tooltip: 'Refresh Page',
+                  child: Icon(Icons.refresh),
+                )
+              : null,
     ),
   );
 }
@@ -356,250 +373,240 @@ Widget _buildFeeds(DiscoverPageState state, context) {
           ),
         ),
         SizedBox(height: 16),
-        FutureBuilder(
-          future: Post.bulk(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError ||
-                snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator(
-                color: Colors.white,
-              );
-            }
-            return MasonryGridView.builder(
-              itemCount: snapshot.data!.length,
-              gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: row,
-              ),
-              itemBuilder: (context, index) {
-                return Container(
-                  margin: EdgeInsets.all(6),
-                  child: Column(
-                    children: [
-                      Container(
-                        color: Colors.black54,
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ImagePreviewPage(
-                                postData: snapshot.data![index],
-                                isFeatured: false,
+        state.posts == null
+            ? CircularProgressIndicator(color: Colors.white)
+            : MasonryGridView.builder(
+                itemCount: state.posts!.length,
+                gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: row,
+                ),
+                itemBuilder: (context, index) {
+                  return Container(
+                    margin: EdgeInsets.all(6),
+                    child: Column(
+                      children: [
+                        Container(
+                          color: Colors.black54,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ImagePreviewPage(
+                                  postData: state.posts![index],
+                                  isFeatured: false,
+                                ),
                               ),
+                            );
+                          },
+                          child: Hero(
+                            tag: state.posts![index].id,
+                            child: Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8)),
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      FadeInImage(
+                                        placeholder: const AssetImage(
+                                            'assets/placeholder.png'),
+                                        image: NetworkImage(
+                                            state.posts![index].thumb.url),
+                                        width: state
+                                            .posts![index].image.dimension[0],
+                                        fit: BoxFit.contain,
+                                        fadeInDuration:
+                                            const Duration(milliseconds: 300),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (state.posts![index].rating ==
+                                    Rating.explicit)
+                                  Positioned.fill(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(8),
+                                      ),
+                                      child: BackdropFilter(
+                                        filter: ImageFilter.blur(
+                                          sigmaX: 10,
+                                          sigmaY: 10,
+                                        ),
+                                        child: Container(
+                                          color: Colors.black54,
+                                          alignment: Alignment.center,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Spacer(),
+                                              Icon(
+                                                Icons.eighteen_up_rating,
+                                                color: Colors.white,
+                                              ),
+                                              SizedBox(height: 5.0),
+                                              Text(
+                                                "Explicit",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              Spacer(),
+                                              Padding(
+                                                padding: EdgeInsets.all(8),
+                                                child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                  children: [
+                                                    CircleAvatar(
+                                                      radius: 10,
+                                                      backgroundImage:
+                                                          NetworkImage(state
+                                                              .posts![index]
+                                                              .artist
+                                                              .avatar),
+                                                    ),
+                                                    SizedBox(width: 8.0),
+                                                    Text(
+                                                      state.posts![index].artist
+                                                          .display,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                if (state.posts![index].rating ==
+                                    Rating.sensitive)
+                                  Positioned.fill(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(8),
+                                      ),
+                                      child: BackdropFilter(
+                                        filter: ImageFilter.blur(
+                                          sigmaX: 10,
+                                          sigmaY: 10,
+                                        ),
+                                        child: Container(
+                                          color: Colors.black54,
+                                          alignment: Alignment.center,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Spacer(),
+                                              Icon(
+                                                Icons.visibility_off,
+                                                color: Colors.white,
+                                              ),
+                                              SizedBox(height: 5.0),
+                                              Text(
+                                                "Sensitive",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              Spacer(),
+                                              Padding(
+                                                padding: EdgeInsets.all(8),
+                                                child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                  children: [
+                                                    CircleAvatar(
+                                                      radius: 10,
+                                                      backgroundImage:
+                                                          NetworkImage(state
+                                                              .posts![index]
+                                                              .artist
+                                                              .avatar),
+                                                    ),
+                                                    SizedBox(width: 8.0),
+                                                    Text(
+                                                      state.posts![index].artist
+                                                          .display,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                if (state.posts![index].rating ==
+                                    Rating.general)
+                                  Positioned.fill(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(8),
+                                      ),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment(0.0, 0.0),
+                                            end: Alignment(-0.5, 1.0),
+                                            colors: [
+                                              Colors.transparent,
+                                              Color.fromRGBO(0, 0, 0, 0.4)
+                                            ],
+                                          ),
+                                        ),
+                                        child: Padding(
+                                          padding: EdgeInsets.all(8),
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              CircleAvatar(
+                                                radius: 10,
+                                                backgroundImage: NetworkImage(
+                                                    state.posts![index].artist
+                                                        .avatar),
+                                              ),
+                                              SizedBox(width: 8.0),
+                                              Text(
+                                                state.posts![index].artist
+                                                    .display,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
-                          );
-                        },
-                        child: Hero(
-                          tag: snapshot.data![index].id,
-                          child: Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    FadeInImage(
-                                      placeholder: const AssetImage(
-                                          'assets/placeholder.png'),
-                                      image: NetworkImage(
-                                          snapshot.data![index].thumb.url),
-                                      width: snapshot
-                                          .data![index].image.dimension[0],
-                                      fit: BoxFit.contain,
-                                      fadeInDuration:
-                                          const Duration(milliseconds: 300),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (snapshot.data![index].rating ==
-                                  Rating.explicit)
-                                Positioned.fill(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
-                                    ),
-                                    child: BackdropFilter(
-                                      filter: ImageFilter.blur(
-                                        sigmaX: 10,
-                                        sigmaY: 10,
-                                      ),
-                                      child: Container(
-                                        color: Colors.black54,
-                                        alignment: Alignment.center,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Spacer(),
-                                            Icon(
-                                              Icons.eighteen_up_rating,
-                                              color: Colors.white,
-                                            ),
-                                            SizedBox(height: 5.0),
-                                            Text(
-                                              "Explicit",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            Spacer(),
-                                            Padding(
-                                              padding: EdgeInsets.all(8),
-                                              child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                children: [
-                                                  CircleAvatar(
-                                                    radius: 10,
-                                                    backgroundImage:
-                                                        NetworkImage(snapshot
-                                                            .data![index]
-                                                            .artist
-                                                            .avatar),
-                                                  ),
-                                                  SizedBox(width: 8.0),
-                                                  Text(
-                                                    snapshot.data![index].artist
-                                                        .display,
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyMedium,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              if (snapshot.data![index].rating ==
-                                  Rating.sensitive)
-                                Positioned.fill(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
-                                    ),
-                                    child: BackdropFilter(
-                                      filter: ImageFilter.blur(
-                                        sigmaX: 10,
-                                        sigmaY: 10,
-                                      ),
-                                      child: Container(
-                                        color: Colors.black54,
-                                        alignment: Alignment.center,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Spacer(),
-                                            Icon(
-                                              Icons.visibility_off,
-                                              color: Colors.white,
-                                            ),
-                                            SizedBox(height: 5.0),
-                                            Text(
-                                              "Sensitive",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            Spacer(),
-                                            Padding(
-                                              padding: EdgeInsets.all(8),
-                                              child: Row(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                children: [
-                                                  CircleAvatar(
-                                                    radius: 10,
-                                                    backgroundImage:
-                                                        NetworkImage(snapshot
-                                                            .data![index]
-                                                            .artist
-                                                            .avatar),
-                                                  ),
-                                                  SizedBox(width: 8.0),
-                                                  Text(
-                                                    snapshot.data![index].artist
-                                                        .display,
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyMedium,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              if (snapshot.data![index].rating ==
-                                  Rating.general)
-                                Positioned.fill(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
-                                    ),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment(0.0, 0.0),
-                                          end: Alignment(-0.5, 1.0),
-                                          colors: [
-                                            Colors.transparent,
-                                            Color.fromRGBO(0, 0, 0, 0.4)
-                                          ],
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: EdgeInsets.all(8),
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            CircleAvatar(
-                                              radius: 10,
-                                              backgroundImage: NetworkImage(
-                                                  snapshot.data![index].artist
-                                                      .avatar),
-                                            ),
-                                            SizedBox(width: 8.0),
-                                            Text(
-                                              snapshot
-                                                  .data![index].artist.display,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-            );
-          },
-        ),
-        SizedBox(height: 48.0)
+                      ],
+                    ),
+                  );
+                },
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+              ),
       ],
     ),
   );
