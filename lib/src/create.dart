@@ -102,8 +102,6 @@ class CreatePageState extends State<CreatePage> {
 
     id = Uuid().v4();
 
-    if (!mounted) return;
-
     if (result != null && result.files.single.path != null) {
       file = File(result.files.single.path!);
 

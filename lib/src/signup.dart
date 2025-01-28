@@ -73,8 +73,6 @@ class SignUpPageState extends State<SignUpPage> {
       allowMultiple: false,
     );
 
-    if (!mounted) return;
-
     if (result != null && result.files.single.path != null) {
       setState(() {
         file = File(result.files.single.path!);
