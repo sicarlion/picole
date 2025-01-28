@@ -13,3 +13,24 @@ Future<List<String>> loadCredentials() async {
 
   return [name, pass];
 }
+
+Future<void> setObsolete(bool status) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  if (status == true) {
+    await prefs.setString('obsolete', 'true');
+  } else {
+    await prefs.setString('obsolete', 'false');
+  }
+}
+
+Future<bool> isObsolete() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String status = prefs.getString('obsolete') ?? '';
+
+  if (status == 'true') {
+    return true;
+  } else {
+    return false;
+  }
+}

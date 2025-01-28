@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:picole/src/welcome.dart';
+import 'package:picole/tools/credentials.dart';
 import 'package:picole/tools/database.dart';
 import 'package:picole/ui/ui_discover.dart';
 
@@ -19,6 +21,7 @@ class DiscoverPageState extends State<DiscoverPage> {
   @override
   void initState() {
     super.initState();
+    _validateVersion(context);
     _validateCredentials(context);
   }
 
@@ -31,6 +34,25 @@ class DiscoverPageState extends State<DiscoverPage> {
           MaterialPageRoute(builder: (context) => const WelcomePage()),
         );
       }
+    }
+  }
+
+  void _validateVersion(context) async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    String version = packageInfo.version;
+    String buildNumber = packageInfo.buildNumber;
+
+    final meta = await supabase.from('appmeta').select('meta, value');
+    final minVersion = meta[0]['value'];
+
+    if ("$version+$buildNumber" != minVersion) {
+      saveCredentials('', '');
+      setObsolete(true);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const WelcomePage()),
+      );
     }
   }
 }

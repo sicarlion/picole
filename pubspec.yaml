@@ -3,7 +3,7 @@ description: "A centralized image board for Artists to share their works!"
 
 publish_to: 'none' 
 
-version: 1.0.0+1
+version: 0.0.1+4
 
 environment:
   sdk: ^3.6.0
@@ -20,6 +20,7 @@ dependencies:
   supabase_flutter: ^2.8.3
   cloudinary_sdk: ^5.0.0+1
   flutter_dotenv: ^5.2.1
+  package_info_plus: ^8.1.3
 
 dev_dependencies:
   test: ^1.24.0

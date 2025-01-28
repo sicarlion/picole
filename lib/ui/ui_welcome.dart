@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:picole/src/login.dart';
 import 'package:picole/src/signup.dart';
+import 'package:picole/tools/credentials.dart';
 
 Widget uiWelcomePage(BuildContext context, state) {
   return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -163,6 +164,23 @@ Widget _buildLoginForm(context, state) {
             .labelLarge!
             .copyWith(color: Colors.grey),
       ),
+      SizedBox(height: 16.0),
+      FutureBuilder(
+        future: isObsolete(),
+        builder: (context, snapshot) {
+          if (snapshot.data == true) {
+            return Text(
+              "This app version is marked as obsolete and no longer support our latest feature. Please update to the latest version!",
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge!
+                  .copyWith(color: Colors.red, fontWeight: FontWeight.bold),
+            );
+          } else {
+            return SizedBox();
+          }
+        },
+      )
     ],
   );
 }

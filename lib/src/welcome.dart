@@ -9,6 +9,8 @@ class WelcomePage extends StatefulWidget {
 }
 
 class WelcomePageState extends State<WelcomePage> {
+  bool isObsolete = false;
+
   @override
   Widget build(BuildContext context) {
     return uiWelcomePage(context, this);
