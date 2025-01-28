@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:picole/tools/database.dart';
 
 Widget _buildCustomAppBar(BuildContext context) {
   return Positioned(
@@ -24,7 +27,8 @@ Widget _buildCustomAppBar(BuildContext context) {
   );
 }
 
-Widget uiViewer(BuildContext context, dynamic state, dynamic postData) {
+Widget uiViewer(
+    BuildContext context, dynamic state, Post? postData, File? file) {
   return Scaffold(
     backgroundColor: Colors.black,
     body: Stack(
@@ -36,8 +40,8 @@ Widget uiViewer(BuildContext context, dynamic state, dynamic postData) {
             Align(
               alignment: Alignment.center,
               child: Hero(
-                tag: postData.id,
-                child: _buildPreviewer(context, postData),
+                tag: postData?.id ?? 'peek',
+                child: _buildPreviewer(context, postData, file),
               ),
             ),
           ],
@@ -48,27 +52,34 @@ Widget uiViewer(BuildContext context, dynamic state, dynamic postData) {
   );
 }
 
-Widget _buildPreviewer(BuildContext context, dynamic postData) {
+Widget _buildPreviewer(BuildContext context, Post? postData, File? file) {
   return InteractiveViewer(
     clipBehavior: Clip.none, // Prevent clipping to allow free movement
     minScale: 0.5, // Minimum zoom scale
     maxScale: 4.0, // Maximum zoom scale
     child: Center(
-      child: CachedNetworkImage(
-        imageUrl: postData.image.url,
-        progressIndicatorBuilder: (context, url, downloadProgress) {
-          return CircularProgressIndicator(
-            value: downloadProgress.progress, // Show the progress percentage
-            color: Colors.white,
-          );
-        },
-        errorWidget: (context, url, error) => const Icon(
-          Icons.error,
-          color: Colors.red,
-        ),
-        fadeInDuration:
-            const Duration(milliseconds: 300), // Smooth fade-in effect
-      ),
+      child: postData != null
+          ? CachedNetworkImage(
+              imageUrl: postData.image.url,
+              progressIndicatorBuilder: (context, url, downloadProgress) {
+                return CircularProgressIndicator(
+                  value:
+                      downloadProgress.progress, // Show the progress percentage
+                  color: Colors.white,
+                );
+              },
+              errorWidget: (context, url, error) => const Icon(
+                Icons.error,
+                color: Colors.red,
+              ),
+              fadeInDuration:
+                  const Duration(milliseconds: 300), // Smooth fade-in effect
+            )
+          : file != null
+              ? FadeInImage(
+                  placeholder: AssetImage('assets/placeholder.png'),
+                  image: FileImage(file))
+              : null,
     ),
   );
 }

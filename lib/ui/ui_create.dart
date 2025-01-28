@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:picole/src/create.dart';
 import 'package:picole/src/discover.dart';
+import 'package:picole/src/viewer.dart';
 import 'package:picole/tools/database.dart';
 
 Widget uiCreate(BuildContext context, state) {
@@ -101,36 +102,89 @@ Widget _buildImageForm(BuildContext context, CreatePageState state) {
       ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        child: GestureDetector(
-          onTap: state.isProcessing ? null : state.pickImage,
-          child: Container(
-            alignment: Alignment.center,
-            width: 512,
-            height: 128,
-            decoration: BoxDecoration(
-              border: state.hasError ? Border.all(color: Colors.red) : null,
-              color: const Color.fromRGBO(20, 20, 20, 1),
-              image: state.file != null
-                  ? DecorationImage(
-                      image: FileImage(state.file!),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
+        child: Stack(
+          children: [
+            GestureDetector(
+              onTap: state.isProcessing ? null : state.pickImage,
+              child: Hero(
+                tag: 'peek',
+                child: Container(
+                  alignment: Alignment.center,
+                  width: 512,
+                  height: 128,
+                  decoration: BoxDecoration(
+                    border:
+                        state.hasError ? Border.all(color: Colors.red) : null,
+                    color: const Color.fromRGBO(20, 20, 20, 1),
+                    image: state.file != null
+                        ? DecorationImage(
+                            image: FileImage(state.file!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: state.file == null
+                        ? const Icon(
+                            Icons.add,
+                            color: Colors.white,
+                          )
+                        : state.isProcessing
+                            ? CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : Container(
+                                alignment: Alignment.bottomRight,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment(0.6, -0.8),
+                                    end: Alignment(1, 1),
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.black54
+                                    ],
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsets.fromLTRB(8, 8, 12, 8),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ImageViewerPage(
+                                            file: state.file!,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          "Preview",
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelLarge,
+                                        ),
+                                        SizedBox(
+                                          width: 8.0,
+                                        ),
+                                        Icon(
+                                          Icons.visibility,
+                                          color: Colors.white,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                  ),
+                ),
+              ),
             ),
-            child: Container(
-              alignment: Alignment.center,
-              child: state.file == null
-                  ? const Icon(
-                      Icons.add,
-                      color: Colors.white,
-                    )
-                  : state.isProcessing
-                      ? CircularProgressIndicator(
-                          color: Colors.white,
-                        )
-                      : null,
-            ),
-          ),
+          ],
         ),
       ),
     ],
