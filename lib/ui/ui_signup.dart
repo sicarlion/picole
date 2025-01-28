@@ -10,24 +10,20 @@ Widget uiSignUpPage(BuildContext context, SignUpPageState state) {
       body: Stack(
         children: [
           SingleChildScrollView(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height, // Full screen height
-              child: Padding(
-                padding: EdgeInsets.all(48),
-                child: AnimatedOpacity(
-                  opacity: state.isProcessing ? 0.5 : 1,
-                  duration: Duration(milliseconds: 100),
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start, // Left-aligned
-                    mainAxisAlignment:
-                        MainAxisAlignment.center, // Vertically centered
-                    children: [
-                      _buildHeader(context),
-                      SizedBox(height: 32.0),
-                      _buildLoginForm(context, state),
-                    ],
-                  ),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(48, 128, 48, 48),
+              child: AnimatedOpacity(
+                opacity: state.isProcessing ? 0.5 : 1,
+                duration: Duration(milliseconds: 100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start, // Left-aligned
+                  mainAxisAlignment:
+                      MainAxisAlignment.center, // Vertically centered
+                  children: [
+                    _buildHeader(context),
+                    SizedBox(height: 32.0),
+                    _buildLoginForm(context, state),
+                  ],
                 ),
               ),
             ),

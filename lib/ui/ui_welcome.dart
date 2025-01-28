@@ -11,20 +11,17 @@ Widget uiWelcomePage(BuildContext context, state) {
       body: Stack(
         children: [
           SingleChildScrollView(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height, // Full screen height
-              child: Padding(
-                padding: EdgeInsets.all(48),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, // Left-aligned
-                  mainAxisAlignment:
-                      MainAxisAlignment.center, // Vertically centered
-                  children: [
-                    _buildHeader(context),
-                    SizedBox(height: 32.0),
-                    _buildLoginForm(context, state),
-                  ],
-                ),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(48, 128, 48, 48),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start, // Left-aligned
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // Vertically centered
+                children: [
+                  _buildHeader(context),
+                  SizedBox(height: 32.0),
+                  _buildLoginForm(context, state),
+                ],
               ),
             ),
           ),
@@ -70,7 +67,7 @@ Widget _buildLoginForm(context, state) {
     children: [
       TextButton(
         onPressed: () {
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const LoginPage()),
           );
@@ -102,7 +99,7 @@ Widget _buildLoginForm(context, state) {
       SizedBox(height: 16.0),
       TextButton(
         onPressed: () {
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const SignUpPage()),
           );

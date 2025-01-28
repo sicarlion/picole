@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Database.init();
+  resetSp();
   debugPaintSizeEnabled = false;
   runApp(const Picole());
 }
