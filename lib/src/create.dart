@@ -34,6 +34,7 @@ class CreatePageState extends State<CreatePage> {
   @override
   void initState() {
     super.initState();
+    id = Uuid().v4();
   }
 
   Future<int> createPost() async {
@@ -99,8 +100,6 @@ class CreatePageState extends State<CreatePage> {
       type: FileType.image,
       allowMultiple: false,
     );
-
-    id = Uuid().v4();
 
     if (result != null && result.files.single.path != null) {
       file = File(result.files.single.path!);
