@@ -8,7 +8,6 @@ import 'package:picole/src/create.dart';
 import 'package:picole/src/discover.dart';
 import 'package:picole/src/preview.dart';
 import 'package:picole/tools/database.dart';
-import 'dart:math' as math;
 
 Widget uiDiscover(BuildContext context, state) {
   List<double> viewportRect = [
@@ -75,17 +74,17 @@ Widget _buildBackground(DiscoverPageState state) {
                   ),
                 ),
               ),
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(32, 32, 32, 80),
-                  child: Image(
-                    image: AssetImage('assets/picole-title.png'),
-                    width: 148,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
+              // Align(
+              //   alignment: Alignment.bottomLeft,
+              //   child: Padding(
+              //     padding: EdgeInsets.fromLTRB(32, 32, 32, 80),
+              //     child: Image(
+              //       image: AssetImage('assets/picole-title.png'),
+              //       width: 148,
+              //       fit: BoxFit.cover,
+              //     ),
+              //   ),
+              //  ),
             ],
           ),
         ),
