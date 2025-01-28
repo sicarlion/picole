@@ -262,7 +262,7 @@ Widget _buildMetaForm(BuildContext context, CreatePageState state) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'General, it is safe for everyone',
+                  'General, it is safe for everyone.',
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
                 Text(
@@ -288,7 +288,7 @@ Widget _buildMetaForm(BuildContext context, CreatePageState state) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sensitve, might contain suggestive material',
+                  'Sensitive, might contain suggestive material.',
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
                 Text(
@@ -314,7 +314,7 @@ Widget _buildMetaForm(BuildContext context, CreatePageState state) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Explicit, not safe to view at work',
+                  'Explicit, not safe to view at work.',
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
                 Text(
@@ -410,7 +410,7 @@ Widget _buildMetaForm(BuildContext context, CreatePageState state) {
 
           if (result == 0) {
             if (context.mounted) {
-              Navigator.of(context).pushReplacement(
+              Navigator.of(context).pop(
                 PageRouteBuilder(
                   transitionDuration: const Duration(milliseconds: 100),
                   pageBuilder: (context, animation, secondaryAnimation) =>

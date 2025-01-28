@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:picole/src/viewer.dart';
 
 Widget _buildCustomAppBar(BuildContext context) {
   return Positioned(
@@ -73,7 +74,19 @@ Widget uiPreview(
                   alignment: Alignment.topLeft,
                   child: Hero(
                     tag: isFeatured ? 'featured' : postData.id,
-                    child: _buildPreviewer(context, postData),
+                    child: GestureDetector(
+                      child: _buildPreviewer(context, postData),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ImageViewerPage(
+                              postData: postData,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -162,7 +175,6 @@ Widget uiPreview(
 }
 
 Widget _buildPreviewer(BuildContext context, dynamic postData) {
-  final viewportWidth = MediaQuery.of(context).size.width;
   final viewportHeight = MediaQuery.of(context).size.height;
 
   final imageWidth = postData.thumb.dimension[0];
@@ -186,52 +198,6 @@ Widget _buildPreviewer(BuildContext context, dynamic postData) {
           width: postData.thumb.dimension[0],
           fit: BoxFit.contain,
           fadeInDuration: const Duration(milliseconds: 300),
-        ),
-        // Main image with loading progress and dynamic color filtering
-        Image.network(
-          postData.image.url,
-          fit: BoxFit.contain,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) {
-              return child;
-            }
-            double progress = loadingProgress.expectedTotalBytes != null
-                ? loadingProgress.cumulativeBytesLoaded /
-                    (loadingProgress.expectedTotalBytes ?? 1)
-                : 0;
-            return Container(
-              foregroundDecoration: BoxDecoration(
-                color: Colors.black.withValues(
-                  alpha: (1.0 - progress) / 2,
-                ), // Darkens at 0%, normal at 100%
-              ),
-              width: postData.thumb.dimension[0],
-              height: postData.thumb.dimension[1] /
-                      postData.thumb.dimension[0] *
-                      viewportWidth -
-                  36,
-              constraints:
-                  BoxConstraints(maxWidth: postData.thumb.dimension[0]),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  child,
-                  // Apply a ColorFilter to make the image darker initially
-                  CircularProgressIndicator(
-                    color: Colors.white,
-                    value: progress,
-                  ),
-                ],
-              ),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) => const Center(
-            child: Icon(
-              Icons.broken_image,
-              color: Colors.white54,
-              size: 100,
-            ),
-          ),
         ),
       ],
     ),
