@@ -8,6 +8,7 @@ import 'package:picole/src/create.dart';
 import 'package:picole/src/discover.dart';
 import 'package:picole/src/preview.dart';
 import 'package:picole/tools/database.dart';
+import 'dart:math' as math;
 
 Widget uiDiscover(BuildContext context, state) {
   List<double> viewportRect = [
@@ -26,6 +27,7 @@ Widget uiDiscover(BuildContext context, state) {
             child: Column(
               children: [
                 _buildHeader(context, state),
+                SizedBox(height: 32),
                 _buildFeaturedPost(viewportRect, state),
                 _buildFeeds(state, context),
               ],
@@ -70,6 +72,17 @@ Widget _buildBackground(DiscoverPageState state) {
                       end: Alignment.bottomCenter,
                       colors: [Colors.black26, Colors.black],
                     ),
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(32, 32, 32, 80),
+                  child: Image(
+                    image: AssetImage('assets/picole-title.png'),
+                    width: 148,
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
@@ -155,7 +168,7 @@ Widget _buildFeaturedPost(List<double> viewportRect, DiscoverPageState state) {
       return Align(
         alignment: Alignment.topLeft,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(40, 40, 40, 0),
+          padding: EdgeInsets.fromLTRB(24, 24, 24, 0),
           child: SizedBox(
             width: clampDouble(viewportRect[0], 0, 700),
             height: 240,
@@ -318,20 +331,32 @@ Widget _buildFeeds(DiscoverPageState state, context) {
     row = 2;
   }
   return Padding(
-      padding: EdgeInsets.all(40),
+      padding: EdgeInsets.all(20),
       child: Column(
         children: [
-          Container(
-            alignment: Alignment.topLeft,
-            child: Text(
-              "Feeds",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+          Padding(
+            padding: EdgeInsets.all(4),
+            child: Column(
+              children: [
+                Container(
+                  alignment: Alignment.center,
+                  child: Text("Feeds",
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleLarge),
+                ),
+                Container(
+                  alignment: Alignment.center,
+                  child: Text("• • • • • •",
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                            color: Colors.redAccent,
+                            fontSize: 21,
+                          )),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 30),
+          SizedBox(height: 16),
           FutureBuilder(
             future: Post.bulk(),
             builder: (context, snapshot) {
@@ -348,7 +373,7 @@ Widget _buildFeeds(DiscoverPageState state, context) {
                 ),
                 itemBuilder: (context, index) {
                   return Container(
-                    margin: EdgeInsets.all(8),
+                    margin: EdgeInsets.all(6),
                     child: Column(
                       children: [
                         Container(
