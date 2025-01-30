@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:picole/tools/credentials.dart';
-import 'package:picole/tools/database.dart';
-import 'package:picole/src/discover.dart';
-import 'package:picole/ui/ui_login.dart';
+import 'package:picole/solution/shared.dart';
+import 'package:picole/solution/database.dart';
+import 'package:picole/src/main/discover.dart';
+import 'package:picole/ui/onboard/ui_login.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 class LoginPage extends StatefulWidget {

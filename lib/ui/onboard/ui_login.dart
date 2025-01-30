@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:picole/src/login.dart';
+import 'package:picole/src/onboard/login.dart';
 
 Widget uiLoginPage(BuildContext context, state) {
   return AnnotatedRegion<SystemUiOverlayStyle>(

@@ -2,10 +2,9 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:picole/tools/database.dart';
-import 'package:picole/tools/storage.dart';
-import 'package:picole/ui/ui_create.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' as a;
+import 'package:picole/solution/database.dart';
+import 'package:picole/solution/storage.dart';
+import 'package:picole/ui/main/ui_create.dart';
 import 'package:uuid/uuid.dart';
 
 class CreatePage extends StatefulWidget {
@@ -51,13 +50,35 @@ class CreatePageState extends State<CreatePage> {
       return 3;
     }
 
-    post!.title = title.text;
-    post!.description = description.text;
-    post!.tags = tags.text;
-    post!.rating = rating!;
-    post!.categories = categories!;
+    setState(() {
+      isProcessing = true;
+    });
+    artist = await Client.session();
+
+    if (id == null) {
+      setState(() {
+        isProcessing = false;
+      });
+      return 4;
+    }
+
+    final uploaded = await Storage(image: file, id: id!).dump();
+    post = Post(
+      id: id!,
+      artist: artist!,
+      image: Asset(url: uploaded.url, dimension: uploaded.dimension),
+      title: title.text,
+      description: description.text,
+      rating: rating!,
+      categories: categories!,
+      tags: tags.text,
+    );
 
     await post!.assign();
+
+    setState(() {
+      isProcessing = false;
+    });
 
     return 0;
   }
@@ -102,48 +123,22 @@ class CreatePageState extends State<CreatePage> {
     );
 
     if (result != null && result.files.single.path != null) {
-      file = File(result.files.single.path!);
-
       setState(() {
-        isProcessing = true;
-      });
-      artist = await Client.session();
-
-      if (id == null) {
-        isProcessing = false;
-        return;
-      }
-
-      final uploaded = await Storage(image: file, id: id!).dump();
-      post = Post(
-        id: id!,
-        artist: artist!,
-        image: Asset(url: uploaded.url, dimension: uploaded.dimension),
-        title: title.text,
-        description: description.text,
-        rating: rating!,
-        categories: categories!,
-        tags: tags.text,
-      );
-
-      setState(() {
-        isProcessing = false;
+        file = File(result.files.single.path!);
       });
     }
   }
 
   @override
+  void dispose() {
+    title.dispose();
+    description.dispose();
+    tags.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return uiCreate(context, this);
-  }
-}
-
-Future<int> getLatestPostId() async {
-  try {
-    final res =
-        await supabase.from('posts').select('id').count(a.CountOption.exact);
-    return res.count + 1;
-  } catch (e) {
-    return 1;
   }
 }

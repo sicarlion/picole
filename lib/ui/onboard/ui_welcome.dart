@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:picole/src/login.dart';
-import 'package:picole/src/signup.dart';
-import 'package:picole/tools/credentials.dart';
+import 'package:picole/src/onboard/login.dart';
+import 'package:picole/src/onboard/signup.dart';
+import 'package:picole/solution/shared.dart';
 
 Widget uiWelcomePage(BuildContext context, state) {
   return AnnotatedRegion<SystemUiOverlayStyle>(

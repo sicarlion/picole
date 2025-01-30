@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:picole/src/discover.dart';
-import 'package:picole/tools/database.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:picole/solution/provider.dart';
+import 'package:picole/src/main/discover.dart';
+import 'package:picole/solution/database.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Database.init();
+  await dotenv.load();
+  await Database.init();
   debugPaintSizeEnabled = false;
-  runApp(const Picole());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => GlobalProvider(),
+      child: const Picole(),
+    ),
+  );
 }
 
 void resetSp() async {

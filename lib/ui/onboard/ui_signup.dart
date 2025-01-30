@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:picole/src/signup.dart';
+import 'package:picole/src/onboard/signup.dart';
 
 Widget uiSignUpPage(BuildContext context, SignUpPageState state) {
   return AnnotatedRegion<SystemUiOverlayStyle>(

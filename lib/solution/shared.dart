@@ -34,3 +34,24 @@ Future<bool> isObsolete() async {
     return false;
   }
 }
+
+Future<void> setNetworkCache(bool status) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  if (status == false) {
+    await prefs.setString('network_cache', 'false');
+  } else {
+    await prefs.setString('network_cache', 'true');
+  }
+}
+
+Future<bool> getNetworkCache() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String status = prefs.getString('network_cache') ?? '';
+
+  if (status == 'false') {
+    return false;
+  } else {
+    return true;
+  }
+}

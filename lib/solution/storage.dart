@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:cloudinary_sdk/cloudinary_sdk.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:picole/solution/database.dart';
 
 final cloudinary = Cloudinary.full(
-  apiKey: '828658633436799',
-  apiSecret: '0ON_LXM62U1Mh1JufaVGQ2hSLd8',
-  cloudName: 'dfv5twcgr',
+  apiKey: dotenv.env['CLOUDINARY_API_KEY']!,
+  apiSecret: dotenv.env['CLOUDINARY_API_SECRET']!,
+  cloudName: dotenv.env['CLOUDINARY_API_NAME']!,
 );
 
 /// The main class for Picole Image Storage
@@ -77,23 +79,4 @@ class Storage {
 
     return Asset(url: '', dimension: [0, 0]);
   }
-}
-
-class Asset {
-  /// The URL of the Image
-  String url;
-  List<double> dimension;
-
-  Asset({required this.url, required this.dimension});
-
-  Asset toThumb() {
-    // Find the position to insert the new string
-    String insertion = "c_thumb,q_10,f_auto/";
-    String updatedUrl = url.replaceFirst("/v", "/${insertion}v");
-
-    return Asset(url: updatedUrl, dimension: dimension);
-  }
-
-  /// Drop the value of asset and remove the image from database.
-  void drop() {}
 }

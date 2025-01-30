@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:picole/ui/ui_welcome.dart';
+import 'package:picole/ui/onboard/ui_welcome.dart';
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});

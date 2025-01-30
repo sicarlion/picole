@@ -1,12 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:picole/src/create.dart';
-import 'package:picole/src/discover.dart';
-import 'package:picole/src/viewer.dart';
-import 'package:picole/tools/database.dart';
+import 'package:picole/solution/tools.dart';
+import 'package:picole/src/main/create.dart';
+import 'package:picole/src/main/discover.dart';
+import 'package:picole/src/details/viewer.dart';
+import 'package:picole/solution/database.dart';
+import 'package:picole/src/main/settings.dart';
 
-Widget uiCreate(BuildContext context, state) {
+Widget uiCreate(BuildContext context, CreatePageState state) {
   return AnnotatedRegion<SystemUiOverlayStyle>(
     value: SystemUiOverlayStyle(statusBarColor: Colors.transparent),
     child: Scaffold(
@@ -15,15 +17,22 @@ Widget uiCreate(BuildContext context, state) {
         children: [
           _buildBackground(state),
           Padding(
-            padding: EdgeInsets.fromLTRB(48, 96, 48, 0),
+            padding: toScale(context, 11, 0, 11, 5),
             child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(context, state),
-                  _buildImageForm(context, state),
-                  _buildMetaForm(context, state),
-                ],
+              child: AnimatedOpacity(
+                opacity: state.isProcessing ? 0.5 : 1.0,
+                duration: Duration(milliseconds: 200),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: toScale(context, 0, 10, 0, 0),
+                      child: _buildHeader(context, state),
+                    ),
+                    _buildImageForm(context, state),
+                    _buildMetaForm(context, state),
+                  ],
+                ),
               ),
             ),
           ),
@@ -42,13 +51,13 @@ Widget _buildBackground(CreatePageState state) {
       child: Stack(
         children: [
           if (state.file != null)
-            FadeInImage(
-              placeholder: AssetImage("assets/placeholder.png"),
-              image: FileImage(state.file!),
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              fadeInDuration: Duration(milliseconds: 200),
+            Container(
+              constraints: BoxConstraints.expand(),
+              child: FadeInImage(
+                placeholder: AssetImage('assets/placeholder.png'),
+                image: FileImage(state.file!),
+                fit: BoxFit.cover,
+              ),
             ),
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -460,26 +469,9 @@ Widget _buildMetaForm(BuildContext context, CreatePageState state) {
           foregroundColor: WidgetStateProperty.all<Color>(Colors.black),
         ),
         onPressed: () async {
-          final result = await state.createPost();
-
-          if (result == 0) {
+          if (await state.createPost() == 0) {
             if (context.mounted) {
-              Navigator.of(context).pop(
-                PageRouteBuilder(
-                  transitionDuration: const Duration(milliseconds: 100),
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      DiscoverPage(),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                    const curve = Curves.easeInOut;
-
-                    return FadeTransition(
-                      opacity: animation.drive(CurveTween(curve: curve)),
-                      child: child,
-                    );
-                  },
-                ),
-              );
+              _navigate(context, DiscoverPage());
             }
           }
         },
@@ -494,7 +486,6 @@ Widget _buildMetaForm(BuildContext context, CreatePageState state) {
         style:
             Theme.of(context).textTheme.bodyMedium!.copyWith(color: Colors.red),
       ),
-      SizedBox(height: 52 * 2),
     ],
   );
 }
@@ -521,7 +512,18 @@ Widget _buildBottomNavBar(BuildContext context) {
                 child: Icon(Icons.explore_outlined, color: Colors.white),
               ),
               SizedBox(width: 60),
-              Icon(Icons.add_box, color: Colors.red, size: 34),
+              GestureDetector(
+                onTap: () => _navigate(context, CreatePage()),
+                child: Icon(Icons.add_box, color: Colors.red, size: 34),
+              ),
+              SizedBox(width: 60),
+              GestureDetector(
+                onTap: () => _navigate(context, SettingsPage()),
+                child: Icon(
+                  Icons.settings_outlined,
+                  color: Colors.white,
+                ),
+              ),
             ],
           ),
         ),
@@ -531,5 +533,19 @@ Widget _buildBottomNavBar(BuildContext context) {
 }
 
 void _navigate(BuildContext context, page) {
-  Navigator.of(context).pop();
+  Navigator.of(context).pushReplacement(
+    PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 200),
+      reverseTransitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const curve = Curves.easeInOut;
+
+        return FadeTransition(
+          opacity: animation.drive(CurveTween(curve: curve)),
+          child: child,
+        );
+      },
+    ),
+  );
 }

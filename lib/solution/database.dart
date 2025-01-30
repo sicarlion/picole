@@ -1,18 +1,23 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:picole/tools/credentials.dart';
-import 'package:picole/tools/storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:picole/solution/shared.dart';
+import 'package:picole/solution/storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+enum Rating { general, sensitive, explicit }
+
+enum Categories { normal, art }
 
 final supabase = Supabase.instance.client;
 
 class Database {
-  static void init() async {
+  static Future<void> init() async {
+    await dotenv.load(fileName: ".env");
     await Supabase.initialize(
-      url: 'https://jnamzikmebunbeabpxze.supabase.co',
-      anonKey:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpuYW16aWttZWJ1bmJlYWJweHplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc2NjIwNzgsImV4cCI6MjA1MzIzODA3OH0.RaYDpVAvSTKSMDKWQo9MPlZvqUsAOXnktHP0fcVMX8E',
+      url: dotenv.env['SUPABASE_URL']!,
+      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
     );
   }
 }
@@ -142,18 +147,18 @@ class Client {
 
   static Future<Post> getFeatured() async {
     final client = await Client.session();
+
     final featured = await supabase
         .from('featured')
-        .select('user_id, post')
+        .select(
+            'user_id, post (id, title, user_id (id, email, name, display, avatar), image, description, rating, categories, tags , dimension, score)')
         .eq('user_id', client!.id)
         .single();
-    return Post.find(featured['post']);
+
+    Post post = Post.convert(featured['post']);
+    return post;
   }
 }
-
-enum Rating { general, sensitive, explicit }
-
-enum Categories { normal, art }
 
 class Post {
   String id;
@@ -170,17 +175,23 @@ class Post {
     required this.artist,
     required this.image,
     required this.title,
-    required this.rating,
-    required this.categories,
+    this.rating = Rating.general,
+    this.categories = Categories.normal,
     this.description = '',
     this.tags = '',
   });
 
-  static Future<Post> fetch(PostgrestMap raw) async {
+  static Post convert(PostgrestMap raw) {
     double x = raw['dimension'][0].toDouble();
     double y = raw['dimension'][1].toDouble();
     List<double> dimension = [x, y];
-    final artist = await Users.getId(raw['user_id']);
+
+    final artist = User(
+      id: raw['user_id']['id'],
+      name: raw['user_id']['name'],
+      display: raw['user_id']['display'],
+      avatar: raw['user_id']['avatar'],
+    );
 
     return Post(
       id: raw['id'],
@@ -228,10 +239,10 @@ class Post {
   static Future<List<Post>> bulk() async {
     List<Post> posts = [];
     PostgrestList raw = await supabase.from('posts').select(
-        'id, user_id, image, dimension, title, description, rating, categories, tags');
+        'id, title, user_id (id, email, name, display, avatar), image, description, rating, categories, tags , dimension, score');
 
     for (var item in raw) {
-      final post = await Post.fetch(item);
+      final post = Post.convert(item);
       posts.add(post);
     }
 
@@ -264,10 +275,10 @@ class User {
 
   User({
     required this.id,
-    required this.email,
-    required this.avatar,
-    required this.name,
-    required this.display,
+    this.email = '',
+    this.avatar = '',
+    this.name = '',
+    this.display = '',
   });
 }
 
@@ -316,4 +327,23 @@ class Users {
       display: account['display'],
     );
   }
+}
+
+class Asset {
+  /// The URL of the Image
+  String url;
+  List<double> dimension;
+
+  Asset({required this.url, required this.dimension});
+
+  Asset toThumb() {
+    // Find the position to insert the new string
+    String insertion = "c_thumb,q_10,f_auto/";
+    String updatedUrl = url.replaceFirst("/v", "/${insertion}v");
+
+    return Asset(url: updatedUrl, dimension: dimension);
+  }
+
+  /// Drop the value of asset and remove the image from database.
+  void drop() {}
 }
