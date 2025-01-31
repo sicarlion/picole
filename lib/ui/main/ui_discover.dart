@@ -335,7 +335,7 @@ Widget _buildFeeds(BuildContext context, DiscoverPageState state) {
                             state.posts![index].image.dimension[0] *
                             ((width - (getWidthScale(context, 5) * 2)) / row -
                                 8),
-                        fit: BoxFit.contain,
+                        fit: BoxFit.cover,
                         fadeOutDuration: Duration(milliseconds: 200),
                         fadeInDuration: Duration(milliseconds: 200),
                       )
@@ -347,7 +347,7 @@ Widget _buildFeeds(BuildContext context, DiscoverPageState state) {
                             state.posts![index].image.dimension[0] *
                             ((width - (getWidthScale(context, 5) * 2)) / row -
                                 8),
-                        fit: BoxFit.contain,
+                        fit: BoxFit.cover,
                         fadeOutDuration: Duration(milliseconds: 200),
                         fadeInDuration: Duration(milliseconds: 200),
                       ),

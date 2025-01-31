@@ -30,7 +30,7 @@ class Storage {
           await cloudinary.uploadResource(CloudinaryUploadResource(
         filePath: image!.path,
         fileBytes: image!.readAsBytesSync(),
-        resourceType: CloudinaryResourceType.image,
+        resourceType: CloudinaryResourceType.auto,
         folder: '/posts/',
         fileName: id.toString(),
       ));
@@ -61,7 +61,7 @@ class Storage {
           await cloudinary.uploadResource(CloudinaryUploadResource(
         filePath: image!.path,
         fileBytes: image!.readAsBytesSync(),
-        resourceType: CloudinaryResourceType.image,
+        resourceType: CloudinaryResourceType.auto,
         folder: '/avatar/',
         fileName: id.toString(),
       ));
