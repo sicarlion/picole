@@ -30,17 +30,31 @@ class DiscoverPageState extends State<DiscoverPage> {
   @override
   void initState() {
     super.initState();
-    _getClient(context);
-    _getConfig(context);
-    _getFeaturedPost(context);
-    _getFeeds(context);
+    _initialize(context);
+  }
+
+  void _initialize(BuildContext context) async {
     _validateVersion(context);
-    _validateCredentials(context);
+    await _validateCredentials(context);
+    if (context.mounted) {
+      _getClient(context);
+      _getConfig(context);
+      _getFeaturedPost(context);
+      _getFeeds(context);
+    }
   }
 
   Future<void> _validateCredentials(context) async {
-    final client = await Client.restore();
-    if (client == null) {
+    User? client;
+    try {
+      client = await Client.restore();
+      if (client == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const WelcomePage()),
+        );
+      }
+    } catch (e) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const WelcomePage()),

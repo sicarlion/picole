@@ -142,8 +142,8 @@ _buildHeader(BuildContext context, DiscoverPageState state) {
           backgroundColor: Colors.grey,
           child: ClipOval(
             child: state.client != null
-                ? CachedNetworkImage(
-                    imageUrl: state.client!.avatar,
+                ? Image(
+                    image: NetworkImage(state.client!.avatar),
                     width: 40,
                     height: 40,
                     fit: BoxFit.cover,
@@ -203,11 +203,14 @@ _buildFeaturedPost(BuildContext context, DiscoverPageState state) {
                             child: Stack(
                               alignment: Alignment.bottomLeft,
                               children: [
-                                CachedNetworkImage(
-                                  imageUrl: state.featured!.thumb.url,
-                                  fit: BoxFit.cover,
+                                FadeInImage(
+                                  placeholder:
+                                      AssetImage('assets/placeholder.png'),
+                                  image:
+                                      NetworkImage(state.featured!.thumb.url),
                                   width: double.infinity,
                                   height: double.infinity,
+                                  fit: BoxFit.cover,
                                   fadeInDuration: Duration(milliseconds: 200),
                                 ),
                                 Container(
@@ -372,7 +375,6 @@ Widget _buildFeeds(BuildContext context, DiscoverPageState state) {
                             radius: 10,
                             foregroundImage: CachedNetworkImageProvider(
                               state.posts![index].artist.avatar,
-                              cacheKey: state.posts![index].artist.id,
                             ),
                           ),
                           SizedBox(width: 8.0),
