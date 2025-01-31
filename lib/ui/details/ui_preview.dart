@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:picole/solution/database.dart';
 import 'package:picole/solution/tools.dart';
 import 'package:picole/src/details/preview.dart';
@@ -100,25 +98,13 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
       children: [
         Row(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  post.title,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                SizedBox(height: 8.0),
-                if (post.description.trim() != "")
-                  Text(
-                    post.description,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium!
-                        .copyWith(color: Colors.white70),
-                  ),
-              ],
+            Expanded(
+              child: Text(
+                post.title,
+                style: Theme.of(context).textTheme.titleLarge,
+                overflow: TextOverflow.clip,
+              ),
             ),
-            Spacer(),
             SizedBox(width: 8.0),
             GestureDetector(
               onTap: () async {
@@ -138,6 +124,17 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
             ),
           ],
         ),
+        SizedBox(height: 8.0),
+        if (post.description.trim() != "")
+          Text(
+            post.description,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium!
+                .copyWith(color: Colors.white70),
+            overflow: TextOverflow.clip,
+            softWrap: true,
+          ),
         SizedBox(height: 32.0),
         Text(
           "Posted By",
@@ -208,14 +205,15 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                "Tags",
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyLarge!
-                    .copyWith(fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
+              if (post.tags != "")
+                Text(
+                  "Tags",
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge!
+                      .copyWith(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
               SizedBox(height: 8.0),
               Text(
                 post.tags,
