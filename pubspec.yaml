@@ -28,6 +28,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.2
   flutter_cache_manager: ^3.4.1
+  path_provider: ^2.1.5
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   test: ^1.24.0

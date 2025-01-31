@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:picole/solution/database.dart';
 import 'package:picole/solution/tools.dart';
+import 'package:picole/src/details/preview.dart';
 import 'package:picole/src/details/viewer.dart';
 
 Widget uiPreview(
@@ -18,7 +21,7 @@ Widget uiPreview(
             children: [
               _buildCustomAppBar(context),
               _buildPreviewer(context, post),
-              _buildMeta(context, post),
+              _buildMeta(context, post, state),
             ],
           ),
         ),
@@ -28,53 +31,112 @@ Widget uiPreview(
 }
 
 _buildPreviewer(BuildContext context, Post post) {
-  double height = MediaQuery.sizeOf(context).height;
-
   return Align(
     alignment: Alignment.center,
-    child: Container(
-      constraints: BoxConstraints(maxHeight: height / 1.5),
-      child: GestureDetector(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ImageViewerPage(
-              post: post,
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        double screenWidth = constraints.maxWidth;
+        double height = MediaQuery.sizeOf(context).height;
+        double maxHeight = height / 1.5;
+
+        double imageWidth = post.image.dimension[0].toDouble();
+        double imageHeight = post.image.dimension[1].toDouble();
+
+        // Scale down while maintaining aspect ratio
+        double scale = (screenWidth / imageWidth).clamp(0.0, 1.0);
+        double finalWidth = imageWidth * scale;
+        double finalHeight = imageHeight * scale;
+
+        // Ensure it fits within maxHeight
+        if (finalHeight > maxHeight) {
+          double heightScale = maxHeight / finalHeight;
+          finalWidth *= heightScale;
+          finalHeight = maxHeight;
+        }
+
+        return GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ImageViewerPage(post: post),
             ),
           ),
-        ),
-        child: Stack(
-          children: [
-            CachedNetworkImage(
-              imageUrl: post.thumb.url,
-              width: post.image.dimension[0],
-              fit: BoxFit.contain,
-              fadeInDuration: Duration(milliseconds: 300),
+          child: SizedBox(
+            width: finalWidth,
+            height: finalHeight,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CachedNetworkImage(
+                  imageUrl: post.thumb.url,
+                  width: finalWidth,
+                  height: finalHeight,
+                  fit: BoxFit.cover,
+                  fadeInDuration: Duration(milliseconds: 300),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment(0.0, 0.5),
+                      end: Alignment(0.0, 1.0),
+                      colors: [Colors.transparent, Colors.black54],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     ),
   );
 }
 
-_buildMeta(BuildContext context, Post post) {
+_buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
   return Padding(
     padding: toScale(context, 6, 3, 6, 5),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          post.title,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        SizedBox(height: 8.0),
-        Text(
-          post.description,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium!
-              .copyWith(color: Colors.white70),
+        Row(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  post.title,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                SizedBox(height: 8.0),
+                if (post.description.trim() != "")
+                  Text(
+                    post.description,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium!
+                        .copyWith(color: Colors.white70),
+                  ),
+              ],
+            ),
+            Spacer(),
+            SizedBox(width: 8.0),
+            GestureDetector(
+              onTap: () async {
+                state.download(post);
+              },
+              child: state.isDownloading
+                  ? Transform.scale(
+                      scale: 0.8,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(
+                      state.isDownloaded ? Icons.download_done : Icons.download,
+                      color: Colors.white,
+                    ),
+            ),
+          ],
         ),
         SizedBox(height: 32.0),
         Text(
