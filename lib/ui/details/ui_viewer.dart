@@ -24,38 +24,43 @@ Widget uiViewer(
 }
 
 Widget _buildPreviewer(BuildContext context, Post? postData, File? file) {
-  return Align(
-    alignment: Alignment.center,
-    child: Hero(
-      tag: postData?.id ?? 'peek',
+  double width = MediaQuery.of(context).size.width;
+  double height = MediaQuery.of(context).size.height;
+  return Hero(
+    tag: postData?.id ?? 'peek',
+    child: SizedBox(
+      width: width,
+      height: height,
       child: InteractiveViewer(
-        clipBehavior: Clip.none, // Prevent clipping to allow free movement
-        minScale: 0.5, // Minimum zoom scale
-        maxScale: 4.0, // Maximum zoom scale
-        child: Center(
-          child: postData != null
-              ? CachedNetworkImage(
-                  imageUrl: postData.image.url,
-                  progressIndicatorBuilder: (context, url, downloadProgress) {
-                    return CircularProgressIndicator(
-                      value: downloadProgress
-                          .progress, // Show the progress percentage
-                      color: Colors.white,
-                    );
-                  },
-                  errorWidget: (context, url, error) => const Icon(
-                    Icons.error,
-                    color: Colors.red,
-                  ),
-                  fadeInDuration: const Duration(
-                      milliseconds: 300), // Smooth fade-in effect
-                )
-              : file != null
-                  ? FadeInImage(
-                      placeholder: AssetImage('assets/placeholder.png'),
-                      image: FileImage(file))
-                  : null,
-        ),
+        minScale: 0.5,
+        maxScale: 4.0,
+        child: postData != null
+            ? CachedNetworkImage(
+                imageUrl: postData.image.url,
+                progressIndicatorBuilder: (context, url, downloadProgress) {
+                  return Center(
+                    // Centers the progress indicator
+                    child: SizedBox(
+                      width: 40, // Set width
+                      height: 40, // Set height
+                      child: CircularProgressIndicator(
+                        value: downloadProgress.progress,
+                        color: Colors.white,
+                      ),
+                    ),
+                  );
+                },
+                errorWidget: (context, url, error) => const Icon(
+                  Icons.error,
+                  color: Colors.red,
+                ),
+                fadeInDuration: const Duration(milliseconds: 300),
+              )
+            : file != null
+                ? FadeInImage(
+                    placeholder: AssetImage('assets/placeholder.png'),
+                    image: FileImage(file))
+                : Container(),
       ),
     ),
   );
