@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:picole/solution/database.dart';
 import 'package:picole/ui/details/ui_preview.dart';
@@ -33,25 +33,10 @@ class ImagePreviewPageState extends State<ImagePreviewPage> {
     });
 
     File file = await DefaultCacheManager().getSingleFile(post.image.url);
-    String path = file.path.split(Platform.pathSeparator).last;
-    if (Platform.isAndroid) {
-      await Permission.manageExternalStorage.request();
-    }
-    Directory? downloads = await getDownloadsDirectory();
+    // String path = file.path.split(Platform.pathSeparator).last;
 
-    try {
-      if (downloads == null) {
-        return;
-      }
-
-      await file.rename("${downloads.path}/$path");
-    } catch (e) {
-      if (downloads == null) {
-        return;
-      }
-      await file.copy("${downloads.path}/$path");
-      await file.delete();
-    }
+    if (await Permission.photos.request().isDenied) return;
+    ImageGallerySaver.saveImage(await file.readAsBytes());
 
     setState(() {
       isDownloading = false;

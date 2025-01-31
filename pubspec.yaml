@@ -30,6 +30,14 @@ dependencies:
   flutter_cache_manager: ^3.4.1
   path_provider: ^2.1.5
   permission_handler: ^11.3.1
+  image_gallery_saver: ^2.0.3
+  image_picker: ^1.1.2
+
+dependency_overrides:
+  image_gallery_saver:
+    git:
+      url: https://github.com/knottx/image_gallery_saver.git
+      ref: knottx-latest
 
 dev_dependencies:
   test: ^1.24.0
