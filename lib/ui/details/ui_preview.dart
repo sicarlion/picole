@@ -219,14 +219,10 @@ Widget _buildBackground(BuildContext context, Post postData) {
           fit: BoxFit.cover,
         ),
         BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
           child: Container(
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.black26, Colors.black],
-              ),
+              color: Colors.black87,
             ),
           ),
         ),

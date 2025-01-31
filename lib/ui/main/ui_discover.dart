@@ -91,15 +91,9 @@ Widget _buildBackground(DiscoverPageState state, BuildContext context) {
                 : Container(),
           ),
           BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.black45, Colors.black],
-                ),
-              ),
+              color: Colors.black87,
             ),
           ),
         ],
@@ -323,39 +317,43 @@ Widget _buildFeeds(BuildContext context, DiscoverPageState state) {
               ),
             );
           },
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-                child: state.isCached
-                    ? CachedNetworkImage(
-                        imageUrl: state.posts![index].thumb.url,
-                        width: state.posts![index].image.dimension[0],
-                        height: state.posts![index].image.dimension[1] /
-                            state.posts![index].image.dimension[0] *
-                            ((width - (getWidthScale(context, 5) * 2)) / row -
-                                8),
-                        fit: BoxFit.cover,
-                        fadeOutDuration: Duration(milliseconds: 200),
-                        fadeInDuration: Duration(milliseconds: 200),
-                      )
-                    : FadeInImage(
-                        placeholder: AssetImage('assets/placeholder.png'),
-                        image: NetworkImage(state.posts![index].thumb.url),
-                        width: state.posts![index].image.dimension[0],
-                        height: state.posts![index].image.dimension[1] /
-                            state.posts![index].image.dimension[0] *
-                            ((width - (getWidthScale(context, 5) * 2)) / row -
-                                8),
-                        fit: BoxFit.cover,
-                        fadeOutDuration: Duration(milliseconds: 200),
-                        fadeInDuration: Duration(milliseconds: 200),
-                      ),
-              ),
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                  child: Container(
+          child: SizedBox(
+            width: state.posts![index].image.dimension[0],
+            height: state.posts![index].image.dimension[1] /
+                state.posts![index].image.dimension[0] *
+                ((width - (getWidthScale(context, 5) * 2)) / row - 8),
+            child: ClipRRect(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              child: Stack(
+                children: [
+                  state.isCached
+                      ? Container(
+                          constraints: BoxConstraints.expand(),
+                          child: CachedNetworkImage(
+                            imageUrl: state.posts![index].thumb.url,
+                            fit: BoxFit.cover,
+                            fadeOutDuration: Duration(milliseconds: 200),
+                            fadeInDuration: Duration(milliseconds: 200),
+                          ),
+                        )
+                      : Container(
+                          constraints: BoxConstraints.expand(),
+                          child: FadeInImage(
+                            placeholder: AssetImage('assets/placeholder.png'),
+                            image: NetworkImage(state.posts![index].thumb.url),
+                            width: state.posts![index].image.dimension[0],
+                            height: state.posts![index].image.dimension[1] /
+                                state.posts![index].image.dimension[0] *
+                                ((width - (getWidthScale(context, 5) * 2)) /
+                                        row -
+                                    8),
+                            fit: BoxFit.cover,
+                            fadeOutDuration: Duration(milliseconds: 200),
+                            fadeInDuration: Duration(milliseconds: 200),
+                          ),
+                        ),
+                  Container(
+                    constraints: BoxConstraints.expand(),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment(0.0, 0.0),
@@ -386,9 +384,9 @@ Widget _buildFeeds(BuildContext context, DiscoverPageState state) {
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       },
