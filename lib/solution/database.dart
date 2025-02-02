@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:picole/solution/shared.dart';
 import 'package:picole/solution/storage.dart';
-import 'package:picole/solution/tools.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum Rating { general, sensitive, explicit }

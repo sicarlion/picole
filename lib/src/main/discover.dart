@@ -40,7 +40,7 @@ class DiscoverPageState extends State<DiscoverPage> {
       _getClient(context);
       _getConfig(context);
       _getFeaturedPost(context);
-      _getFeeds(context);
+      getFeeds(context);
     }
   }
 
@@ -120,9 +120,12 @@ class DiscoverPageState extends State<DiscoverPage> {
     }
   }
 
-  void _getFeeds(context) async {
+  void getFeeds(context) async {
+    setState(() {
+      if (posts != null && posts!.isNotEmpty) posts = null;
+    });
     final res = await Post.bulk();
-    if (!mounted) return;
+
     setState(() {
       posts = res;
     });

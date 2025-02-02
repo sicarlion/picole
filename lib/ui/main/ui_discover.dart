@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -20,28 +21,41 @@ Widget uiDiscover(BuildContext context, DiscoverPageState state) {
           _buildBackground(state, context),
           Padding(
             padding: toScale(context, 5, 0, 5, 2),
-            child: CustomScrollView(
-              slivers: <Widget>[
-                SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      Padding(
-                        padding: toScale(context, 6, 10, 6, 4),
-                        child: _buildHeader(context, state),
-                      ),
-                      SizedBox(height: 32.0),
-                      _buildFeaturedPost(context, state),
-                      SizedBox(height: 32.0),
-                      _buildFeedsHead(context, state),
-                      SizedBox(height: 32.0),
-                    ],
+            child: Column(
+              children: [
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      state.getFeeds(context);
+                    },
+                    child: CustomScrollView(
+                      physics:
+                          AlwaysScrollableScrollPhysics(), // Allow pull-down even at top
+                      slivers: <Widget>[
+                        SliverList(
+                          delegate: SliverChildListDelegate(
+                            [
+                              Padding(
+                                padding: toScale(context, 6, 10, 6, 4),
+                                child: _buildHeader(context, state),
+                              ),
+                              SizedBox(height: 32.0),
+                              _buildFeaturedPost(context, state),
+                              SizedBox(height: 32.0),
+                              _buildFeedsHead(context, state),
+                              SizedBox(height: 32.0),
+                            ],
+                          ),
+                        ),
+                        _buildFeeds(context, state),
+                      ],
+                    ),
                   ),
                 ),
-                _buildFeeds(context, state),
               ],
             ),
           ),
-          _buildBottomNavBar(context)
+          _buildBottomNavBar(context),
         ],
       ),
     ),
@@ -113,9 +127,19 @@ _buildHeader(BuildContext context, DiscoverPageState state) {
             style: TextStyle(fontSize: 28.0, color: Colors.white),
           ),
           SizedBox(height: 6.0),
-          Text(
-            "Picole",
-            style: TextStyle(fontSize: 16.0, color: Colors.white70),
+          GestureDetector(
+            onTap: () {
+              state.getFeeds(context);
+            },
+            child: Platform.isAndroid || Platform.isIOS
+                ? Text(
+                    "Picole  •  Swipe to Refresh",
+                    style: TextStyle(fontSize: 16.0, color: Colors.white70),
+                  )
+                : Text(
+                    "Picole  •  Click to Refresh",
+                    style: TextStyle(fontSize: 16.0, color: Colors.white70),
+                  ),
           ),
         ],
       ),

@@ -343,7 +343,7 @@ _buildComments(BuildContext context, ImagePreviewPage widget,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "${comment.user.display} - ${timeAgo(comment.timestamp)}", // Assuming comment has a username
+                                  "${comment.user.display} · ${timeAgo(comment.timestamp)}", // Assuming comment has a username
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodySmall!
