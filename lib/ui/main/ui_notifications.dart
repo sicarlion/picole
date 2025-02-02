@@ -7,7 +7,7 @@ import 'package:picole/src/main/discover.dart';
 import 'package:picole/src/main/notifications.dart';
 import 'package:picole/src/main/settings.dart';
 
-Widget uiSettings(BuildContext context, SettingsPageState state) {
+Widget uiNotifications(BuildContext context, NotificationsPageState state) {
   return AnnotatedRegion<SystemUiOverlayStyle>(
     value: SystemUiOverlayStyle(statusBarColor: Colors.transparent),
     child: Scaffold(
@@ -16,17 +16,15 @@ Widget uiSettings(BuildContext context, SettingsPageState state) {
         children: [
           Padding(
             padding: toScale(context, 11, 0, 11, 5),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: toScale(context, 0, 10, 0, 0),
-                    child: _buildHeader(context, state),
-                  ),
-                  _buildSettings(context, state),
-                ],
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: toScale(context, 0, 10, 0, 0),
+                  child: _buildHeader(context, state),
+                ),
+                _buildNotifications(context, state),
+              ],
             ),
           ),
           _buildBottomNavBar(context)
@@ -36,75 +34,46 @@ Widget uiSettings(BuildContext context, SettingsPageState state) {
   );
 }
 
-Widget _buildSettings(BuildContext context, SettingsPageState state) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildToggle(
-        context,
-        title: "Fetch image with cache (experimental)",
-        description:
-            "Cache all downloaded image for faster loading and reduce data usage, in cost of laggy perfomance.",
-        value: state.isCached,
-        onChanged: (bool newValue) {
-          state.setConfig(context, newValue);
-        },
-      ),
-      SizedBox(height: 16),
-      _buildToggle(
-        context,
-        title: "Hide general posts from Discover",
-        description: "Maybe, just maybe, you need to keep everything clean~?",
-        value: true,
-        onChanged: (bool newValue) {
-          true;
-        },
-      ),
-    ],
+Widget _buildNotifications(BuildContext context, NotificationsPageState state) {
+  return Expanded(
+    // Make it take only the available space
+    child: ValueListenableBuilder<List<Notifications>>(
+      valueListenable: NotificationController.notifications,
+      builder: (context, notifications, _) {
+        if (notifications.isEmpty) {
+          return Text(
+            "No new notifications.",
+            style: TextStyle(color: Colors.white),
+          );
+        }
+        return ListView.builder(
+          itemCount: notifications.length,
+          itemBuilder: (context, index) {
+            final notification = notifications[index];
+            return Opacity(
+              opacity: notifications[index].status == NotificationStatus.sent
+                  ? 1.0
+                  : 0.3,
+              child: ListTile(
+                title: Text(
+                  notification.message,
+                  style: TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  timeAgo(notification.timestamp),
+                  style: TextStyle(color: Colors.white70),
+                ),
+                contentPadding: EdgeInsets.only(bottom: 16),
+              ),
+            );
+          },
+        );
+      },
+    ),
   );
 }
 
-Widget _buildToggle(
-  BuildContext context, {
-  required String title,
-  required String description,
-  required bool value,
-  required ValueChanged<bool> onChanged,
-}) {
-  return Row(
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      Transform.scale(
-        scale: 0.8,
-        child: Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: Colors.white,
-        ),
-      ),
-      SizedBox(width: 8.0),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.bodyMedium,
-              softWrap: true,
-            ),
-            Text(
-              description,
-              style: Theme.of(context).textTheme.labelMedium,
-              softWrap: true,
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
-
-Widget _buildHeader(BuildContext context, SettingsPageState state) {
+Widget _buildHeader(BuildContext context, NotificationsPageState state) {
   return Padding(
     padding: EdgeInsets.only(bottom: 32),
     child: Row(
@@ -113,7 +82,7 @@ Widget _buildHeader(BuildContext context, SettingsPageState state) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Settings",
+              "Notifications",
               style: TextStyle(fontSize: 28.0, color: Colors.white),
             ),
             SizedBox(height: 6.0),
@@ -155,27 +124,12 @@ Widget _buildBottomNavBar(BuildContext context) {
                 child: Icon(Icons.add, color: Colors.red, size: 34),
               ),
               SizedBox(width: 60),
-              ValueListenableBuilder<bool>(
-                valueListenable: NotificationController.hasNew,
-                builder: (context, hasNew, _) {
-                  return GestureDetector(
-                    onTap: () {
-                      _navigate(context, NotificationsPage());
-                      NotificationController.hasNew.value =
-                          false; // Reset on open
-                    },
-                    child: Icon(
-                      Icons.notifications_outlined,
-                      color: hasNew ? Colors.red : Colors.white,
-                    ),
-                  );
-                },
-              ),
+              Icon(Icons.notifications, color: Colors.white),
               SizedBox(width: 60),
               GestureDetector(
                 onTap: () => _navigate(context, SettingsPage()),
                 child: Icon(
-                  Icons.settings,
+                  Icons.settings_outlined,
                   color: Colors.white,
                 ),
               ),

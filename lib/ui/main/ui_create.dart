@@ -6,6 +6,7 @@ import 'package:picole/src/main/create.dart';
 import 'package:picole/src/main/discover.dart';
 import 'package:picole/src/details/viewer.dart';
 import 'package:picole/solution/database.dart';
+import 'package:picole/src/main/notifications.dart';
 import 'package:picole/src/main/settings.dart';
 
 Widget uiCreate(BuildContext context, CreatePageState state) {
@@ -515,6 +516,23 @@ Widget _buildBottomNavBar(BuildContext context) {
               GestureDetector(
                 onTap: () => _navigate(context, CreatePage()),
                 child: Icon(Icons.add_box, color: Colors.red, size: 34),
+              ),
+              SizedBox(width: 60),
+              ValueListenableBuilder<bool>(
+                valueListenable: NotificationController.hasNew,
+                builder: (context, hasNew, _) {
+                  return GestureDetector(
+                    onTap: () {
+                      _navigate(context, NotificationsPage());
+                      NotificationController.hasNew.value =
+                          false; // Reset on open
+                    },
+                    child: Icon(
+                      Icons.notifications_outlined,
+                      color: hasNew ? Colors.red : Colors.white,
+                    ),
+                  );
+                },
               ),
               SizedBox(width: 60),
               GestureDetector(

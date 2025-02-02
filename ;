@@ -194,47 +194,38 @@ class NotificationController {
   static ValueNotifier<List<Notifications>> notifications =
       ValueNotifier<List<Notifications>>([]);
   static Timer? _timer;
-  static String? _userId; // Store the userId globally
 
   static void startListening(String userId) {
-    _userId = userId; // Set the global userId
-    _fetch();
+    _fetch(userId);
     _timer?.cancel();
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
-      _fetch();
+      _fetch(userId);
     });
   }
 
-  static void _fetch() async {
-    if (_userId == null) return; // Ensure userId is set
-
+  static void _fetch(String userId) async {
     final supabase = Supabase.instance.client;
     final response = await supabase
         .from('notifications')
         .select('id, user_id, message, timestamp, status')
-        .eq('user_id', _userId!);
+        .eq('status', 'read')
+        .eq('user_id', userId);
 
     List<Notifications> newNotifications = response
         .map<Notifications>((data) => Notifications.fromMap(data))
         .toList();
 
     notifications.value = newNotifications.reversed.toList();
-
-    hasNew.value =
-        newNotifications.any((item) => item.status == NotificationStatus.sent);
+    hasNew.value = newNotifications.isNotEmpty;
   }
 
-  static Future<void> markAsRead() async {
-    if (_userId == null) return;
-
+  static Future<void> markAsRead(String userId) async {
     final supabase = Supabase.instance.client;
     await supabase
         .from('notifications')
         .update({'status': 'read'})
-        .eq('user_id', _userId!)
+        .eq('user_id', userId)
         .eq('status', 'sent');
-
-    _fetch();
   }
 
   static List<Notifications> getNotifications() {
@@ -243,7 +234,6 @@ class NotificationController {
 
   static void stopListening() {
     _timer?.cancel();
-    _userId = null;
   }
 }
 

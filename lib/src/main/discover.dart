@@ -117,13 +117,11 @@ class DiscoverPageState extends State<DiscoverPage> {
       setState(() {
         client = res;
       });
+      NotificationController.startListening(client!.id);
     }
   }
 
   void getFeeds(context) async {
-    setState(() {
-      if (posts != null && posts!.isNotEmpty) posts = null;
-    });
     final res = await Post.bulk();
 
     setState(() {

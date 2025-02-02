@@ -5,10 +5,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:picole/solution/database.dart';
 import 'package:picole/solution/tools.dart';
 import 'package:picole/src/details/preview.dart';
 import 'package:picole/src/main/create.dart';
 import 'package:picole/src/main/discover.dart';
+import 'package:picole/src/main/notifications.dart';
 import 'package:picole/src/main/settings.dart';
 
 Widget uiDiscover(BuildContext context, DiscoverPageState state) {
@@ -437,11 +439,31 @@ Widget _buildBottomNavBar(BuildContext context) {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.explore, color: Colors.white),
+              GestureDetector(
+                onTap: () => _navigate(context, DiscoverPage()),
+                child: Icon(Icons.explore, color: Colors.white),
+              ),
               SizedBox(width: 60),
               GestureDetector(
                 onTap: () => _navigate(context, CreatePage()),
                 child: Icon(Icons.add, color: Colors.red, size: 34),
+              ),
+              SizedBox(width: 60),
+              ValueListenableBuilder<bool>(
+                valueListenable: NotificationController.hasNew,
+                builder: (context, hasNew, _) {
+                  return GestureDetector(
+                    onTap: () {
+                      _navigate(context, NotificationsPage());
+                      NotificationController.hasNew.value =
+                          false; // Reset on open
+                    },
+                    child: Icon(
+                      Icons.notifications_outlined,
+                      color: hasNew ? Colors.red : Colors.white,
+                    ),
+                  );
+                },
               ),
               SizedBox(width: 60),
               GestureDetector(
