@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
@@ -33,10 +35,33 @@ class ImagePreviewPageState extends State<ImagePreviewPage> {
     });
 
     File file = await DefaultCacheManager().getSingleFile(post.image.url);
-    // String path = file.path.split(Platform.pathSeparator).last;
+    Uint8List bytes = await file.readAsBytes();
 
-    if (await Permission.photos.request().isDenied) return;
-    ImageGallerySaver.saveImage(await file.readAsBytes());
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      int sdkInt = androidInfo.version.sdkInt;
+
+      if (sdkInt <= 28) {
+        // Android 9 and below: Use external storage directory
+        if (await Permission.storage.request().isGranted) {
+          String newPath =
+              "/storage/emulated/0/Pictures"; // Change to "Download" if needed
+          Directory newDir = Directory(newPath);
+          if (!newDir.existsSync()) {
+            newDir.createSync(recursive: true);
+          }
+
+          File newFile = File("$newPath/${post.image.url.split('/').last}");
+          await newFile.writeAsBytes(bytes);
+        }
+      } else {
+        // Android 10+ (API 29+): Use MediaStore
+        if (await Permission.photos.request().isGranted) {
+          await ImageGallerySaver.saveImage(bytes,
+              name: post.image.url.split('/').last);
+        }
+      }
+    }
 
     setState(() {
       isDownloading = false;

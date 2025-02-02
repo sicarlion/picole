@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:picole/solution/shared.dart';
 import 'package:picole/solution/database.dart';
 import 'package:picole/src/main/discover.dart';
@@ -68,14 +68,12 @@ class SignUpPageState extends State<SignUpPage> {
   }
 
   Future<void> pickImage() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
-    if (result != null && result.files.single.path != null) {
+    if (image != null) {
       setState(() {
-        file = File(result.files.single.path!);
+        file = File(image.path);
       });
     }
   }
