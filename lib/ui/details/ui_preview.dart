@@ -282,7 +282,7 @@ Widget _buildBackground(BuildContext context, Post postData) {
           filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
           child: Container(
             decoration: const BoxDecoration(
-              color: Colors.black54,
+              color: Colors.black87,
             ),
           ),
         ),

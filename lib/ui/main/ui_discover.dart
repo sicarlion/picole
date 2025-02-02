@@ -93,7 +93,7 @@ Widget _buildBackground(DiscoverPageState state, BuildContext context) {
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
-              color: Colors.black54,
+              color: Colors.black87,
             ),
           ),
         ],
