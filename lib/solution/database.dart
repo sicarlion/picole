@@ -193,20 +193,32 @@ class NotificationController {
   static ValueNotifier<bool> hasNew = ValueNotifier(false);
   static ValueNotifier<List<Notifications>> notifications =
       ValueNotifier<List<Notifications>>([]);
-  static Timer? _timer;
-  static String? _userId; // Store the userId globally
+  static String? _userId;
 
   static void startListening(String userId) {
-    _userId = userId; // Set the global userId
-    _fetch();
-    _timer?.cancel();
-    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
-      _fetch();
-    });
+    _userId = userId;
+
+    final supabase = Supabase.instance.client;
+
+    supabase
+        .channel('public:notifications')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'notifications',
+          filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'user_id',
+              value: userId),
+          callback: (payload) {
+            _fetch();
+          },
+        )
+        .subscribe();
   }
 
   static void _fetch() async {
-    if (_userId == null) return; // Ensure userId is set
+    if (_userId == null) return;
 
     final supabase = Supabase.instance.client;
     final response = await supabase
@@ -242,7 +254,6 @@ class NotificationController {
   }
 
   static void stopListening() {
-    _timer?.cancel();
     _userId = null;
   }
 }

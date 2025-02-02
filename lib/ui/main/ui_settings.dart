@@ -142,44 +142,94 @@ Widget _buildBottomNavBar(BuildContext context) {
             boxShadow: [BoxShadow(blurRadius: 8)],
             border: Border(top: BorderSide(width: 1, color: Colors.white24)),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () => _navigate(context, DiscoverPage()),
-                child: Icon(Icons.explore_outlined, color: Colors.white),
-              ),
-              SizedBox(width: 60),
-              GestureDetector(
-                onTap: () => _navigate(context, CreatePage()),
-                child: Icon(Icons.add, color: Colors.red, size: 34),
-              ),
-              SizedBox(width: 60),
-              ValueListenableBuilder<bool>(
-                valueListenable: NotificationController.hasNew,
-                builder: (context, hasNew, _) {
-                  return GestureDetector(
-                    onTap: () {
-                      _navigate(context, NotificationsPage());
-                      NotificationController.hasNew.value =
-                          false; // Reset on open
-                    },
-                    child: Icon(
-                      Icons.notifications_outlined,
-                      color: hasNew ? Colors.red : Colors.white,
-                    ),
-                  );
-                },
-              ),
-              SizedBox(width: 60),
-              GestureDetector(
-                onTap: () => _navigate(context, SettingsPage()),
-                child: Icon(
-                  Icons.settings,
-                  color: Colors.white,
+          child: Padding(
+            padding: toScale(context, 8, 0, 8, 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: () => _navigate(context, DiscoverPage()),
+                  child: SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: Icon(Icons.explore_outlined, color: Colors.white),
+                  ),
                 ),
-              ),
-            ],
+                Flexible(
+                  flex: 1,
+                  child: SizedBox(
+                    width: 80,
+                  ),
+                ),
+                ValueListenableBuilder<bool>(
+                  valueListenable: NotificationController.hasNew,
+                  builder: (context, hasNew, _) {
+                    return GestureDetector(
+                      onTap: () {
+                        _navigate(context, NotificationsPage());
+                        NotificationController.hasNew.value = false;
+                      },
+                      child: SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: Icon(
+                          Icons.notifications_outlined,
+                          color: hasNew ? Colors.red : Colors.white,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                Flexible(
+                  flex: 1,
+                  child: SizedBox(
+                    width: 80,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _navigate(context, CreatePage()),
+                  child: SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: Icon(Icons.add, color: Colors.red, size: 34),
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: SizedBox(
+                    width: 80,
+                  ),
+                ),
+                Opacity(
+                  opacity: 0.5,
+                  child: SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: Icon(
+                      Icons.account_circle_outlined,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: SizedBox(
+                    width: 80,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _navigate(context, SettingsPage()),
+                  child: SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: Icon(
+                      Icons.settings,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
