@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:picole/solution/shared.dart';
 import 'package:picole/solution/storage.dart';
+import 'package:picole/solution/tools.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum Rating { general, sensitive, explicit }
@@ -151,7 +152,7 @@ class Client {
     final featured = await supabase
         .from('featured')
         .select(
-            'user_id, post (id, title, user_id (id, email, name, display, avatar), image, description, rating, categories, tags , dimension, score)')
+            'user_id, post (id, title, user_id (id, email, name, display, avatar), image, description, rating, categories, tags , dimension, score, timestamp)')
         .eq('user_id', client!.id)
         .single();
 
@@ -169,6 +170,7 @@ class Post {
   Rating rating;
   Categories categories;
   String tags;
+  String timestamp;
 
   Post({
     required this.id,
@@ -179,6 +181,7 @@ class Post {
     this.categories = Categories.normal,
     this.description = '',
     this.tags = '',
+    this.timestamp = '',
   });
 
   static Post convert(PostgrestMap raw) {
@@ -205,6 +208,7 @@ class Post {
       rating: Rating.values.byName(raw['rating']),
       categories: Categories.values.byName(raw['categories']),
       tags: raw['tags'],
+      timestamp: raw['timestamp'],
     );
   }
 
@@ -239,7 +243,7 @@ class Post {
   static Future<List<Post>> bulk() async {
     List<Post> posts = [];
     PostgrestList raw = await supabase.from('posts').select(
-        'id, title, user_id (id, email, name, display, avatar), image, description, rating, categories, tags , dimension, score');
+        'id, title, user_id (id, email, name, display, avatar), image, description, rating, categories, tags , dimension, score, timestamp');
 
     for (var item in raw) {
       final post = Post.convert(item);
@@ -326,6 +330,54 @@ class Users {
       name: account['name'],
       display: account['display'],
     );
+  }
+}
+
+class Comment {
+  User user;
+  String value;
+  String timestamp;
+
+  Comment({
+    required this.user,
+    required this.value,
+    this.timestamp = '',
+  });
+
+  static Future<List<Comment>> get(String id) async {
+    List<Comment> comments = [];
+    final data = await supabase
+        .from('comments')
+        .select('id, post_id, user_id (id, avatar, display), value, timestamp')
+        .eq('post_id', id);
+
+    if (data.isEmpty) {
+      return [];
+    }
+
+    for (var item in data) {
+      final userData = User(
+        id: item['user_id']['id'],
+        avatar: item['user_id']['avatar'],
+        display: item['user_id']['display'],
+      );
+      final comment = Comment(
+        user: userData,
+        value: item['value'],
+        timestamp: item['timestamp'],
+      );
+      comments.add(comment);
+    }
+
+    return comments;
+  }
+
+  static Future<void> add(String postId, String userId, String value) async {
+    await supabase.from('comments').insert({
+      'post_id': postId,
+      'user_id': userId,
+      'value': value,
+    });
   }
 }
 

@@ -1,25 +1,25 @@
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:picole/solution/database.dart';
 import 'package:picole/solution/tools.dart';
 import 'package:picole/src/details/preview.dart';
 import 'package:picole/src/details/viewer.dart';
 
-Widget uiPreview(
-    BuildContext context, dynamic state, dynamic post, bool isFeatured) {
+Widget uiPreview(BuildContext context, ImagePreviewPageState state,
+    ImagePreviewPage widget) {
   return Scaffold(
     backgroundColor: Colors.black,
     body: Stack(
       children: [
-        _buildBackground(context, post),
+        _buildBackground(context, widget),
         SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildCustomAppBar(context),
-              _buildPreviewer(context, post),
-              _buildMeta(context, post, state),
+              _buildPreviewer(context, widget),
+              _buildMeta(context, widget, state),
+              _buildComments(context, widget, state),
             ],
           ),
         ),
@@ -28,7 +28,7 @@ Widget uiPreview(
   );
 }
 
-_buildPreviewer(BuildContext context, Post post) {
+_buildPreviewer(BuildContext context, ImagePreviewPage widget) {
   return Align(
     alignment: Alignment.center,
     child: LayoutBuilder(
@@ -37,8 +37,8 @@ _buildPreviewer(BuildContext context, Post post) {
         double height = MediaQuery.sizeOf(context).height;
         double maxHeight = height / 1.5;
 
-        double imageWidth = post.image.dimension[0].toDouble();
-        double imageHeight = post.image.dimension[1].toDouble();
+        double imageWidth = widget.post.image.dimension[0].toDouble();
+        double imageHeight = widget.post.image.dimension[1].toDouble();
 
         // Scale down while maintaining aspect ratio
         double scale = (screenWidth / imageWidth).clamp(0.0, 1.0);
@@ -56,7 +56,7 @@ _buildPreviewer(BuildContext context, Post post) {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ImageViewerPage(post: post),
+              builder: (context) => ImageViewerPage(post: widget.post),
             ),
           ),
           child: SizedBox(
@@ -66,7 +66,7 @@ _buildPreviewer(BuildContext context, Post post) {
               alignment: Alignment.center,
               children: [
                 CachedNetworkImage(
-                  imageUrl: post.thumb.url,
+                  imageUrl: widget.post.thumb.url,
                   width: finalWidth,
                   height: finalHeight,
                   fit: BoxFit.cover,
@@ -90,7 +90,8 @@ _buildPreviewer(BuildContext context, Post post) {
   );
 }
 
-_buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
+_buildMeta(BuildContext context, ImagePreviewPage widget,
+    ImagePreviewPageState state) {
   return Padding(
     padding: toScale(context, 6, 3, 6, 5),
     child: Column(
@@ -100,7 +101,7 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
           children: [
             Expanded(
               child: Text(
-                post.title,
+                widget.post.title,
                 style: Theme.of(context).textTheme.titleLarge,
                 overflow: TextOverflow.clip,
               ),
@@ -108,7 +109,7 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
             SizedBox(width: 8.0),
             GestureDetector(
               onTap: () async {
-                state.download(post);
+                state.download(widget.post);
               },
               child: state.isDownloading
                   ? Transform.scale(
@@ -125,9 +126,9 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
           ],
         ),
         SizedBox(height: 8.0),
-        if (post.description.trim() != "")
+        if (widget.post.description.trim() != "")
           Text(
-            post.description,
+            widget.post.description,
             style: Theme.of(context)
                 .textTheme
                 .bodyMedium!
@@ -151,7 +152,7 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
               backgroundColor: Colors.grey,
               child: ClipOval(
                 child: CachedNetworkImage(
-                  imageUrl: post.artist.avatar,
+                  imageUrl: widget.post.artist.avatar,
                   width: 40,
                   height: 40,
                   fit: BoxFit.cover,
@@ -162,9 +163,9 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(post.artist.display,
+                Text(widget.post.artist.display,
                     style: Theme.of(context).textTheme.bodyLarge!),
-                Text("0 minutes ago",
+                Text(timeAgo(widget.post.timestamp),
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium!
@@ -205,7 +206,7 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (post.tags != "")
+              if (widget.post.tags != "")
                 Text(
                   "Tags",
                   style: Theme.of(context)
@@ -216,7 +217,7 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
                 ),
               SizedBox(height: 8.0),
               Text(
-                post.tags,
+                widget.post.tags,
                 style: Theme.of(context).textTheme.bodyMedium!,
               ),
               SizedBox(height: 16.0),
@@ -229,7 +230,7 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
               ),
               SizedBox(height: 8.0),
               Text(
-                "${post.rating.name} - ${post.categories.name}\n${post.image.dimension}",
+                "${widget.post.rating.name} - ${widget.post.categories.name}\n${widget.post.image.dimension}",
                 style: Theme.of(context).textTheme.bodyMedium!,
                 textAlign: TextAlign.center,
               ),
@@ -237,6 +238,135 @@ _buildMeta(BuildContext context, Post post, ImagePreviewPageState state) {
           ),
         ),
       ],
+    ),
+  );
+}
+
+_buildComments(BuildContext context, ImagePreviewPage widget,
+    ImagePreviewPageState state) {
+  return Padding(
+    padding: toScale(context, 6, 3, 6, 5),
+    child: Align(
+      alignment: Alignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            'Comments',
+            style: Theme.of(context)
+                .textTheme
+                .bodyLarge!
+                .copyWith(fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8.0),
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.grey,
+                child: ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: widget.client.avatar,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              SizedBox(width: 8.0),
+              Expanded(
+                child: TextField(
+                  controller: state.commentController,
+                  decoration: InputDecoration(
+                    hintText: "Write a comment",
+                    hintStyle: TextStyle(color: Colors.grey),
+                    border: OutlineInputBorder(),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.transparent),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.transparent, width: 2.0),
+                    ),
+                  ),
+                  style: TextStyle(color: Colors.white),
+                  cursorColor: Colors.grey,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  state.addComment(widget.post.id, widget.client.id,
+                      state.commentController.text);
+                },
+                child: state.isCommenting
+                    ? Transform.scale(
+                        scale: 0.7,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                        ),
+                      )
+                    : Icon(Icons.send, color: Colors.white),
+              ),
+            ],
+          ),
+          SizedBox(height: 32.0),
+          state.comments == null
+              ? CircularProgressIndicator(
+                  color: Colors.white,
+                )
+              : Column(
+                  children: state.comments!.map((comment) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(top: 4.0),
+                            child: CircleAvatar(
+                              radius: 14,
+                              backgroundColor: Colors.grey,
+                              child: ClipOval(
+                                child: CachedNetworkImage(
+                                  imageUrl: comment.user
+                                      .avatar, // Assuming comment has an avatar
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 16.0),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "${comment.user.display} - ${timeAgo(comment.timestamp)}", // Assuming comment has a username
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall!
+                                      .copyWith(color: Colors.grey),
+                                  textAlign: TextAlign.left,
+                                ),
+                                Text(
+                                  comment
+                                      .value, // Assuming comment has a text field
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  overflow: TextOverflow.clip,
+                                  textAlign: TextAlign.left,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+        ],
+      ),
     ),
   );
 }
@@ -261,7 +391,7 @@ Widget _buildCustomAppBar(BuildContext context) {
   );
 }
 
-Widget _buildBackground(BuildContext context, Post postData) {
+Widget _buildBackground(BuildContext context, ImagePreviewPage widget) {
   List<double> viewport = [
     MediaQuery.of(context).size.width,
     MediaQuery.of(context).size.height
@@ -273,7 +403,7 @@ Widget _buildBackground(BuildContext context, Post postData) {
     child: Stack(
       children: [
         CachedNetworkImage(
-          imageUrl: postData.thumb.url,
+          imageUrl: widget.post.thumb.url,
           width: viewport[0],
           height: viewport[1],
           fit: BoxFit.cover,

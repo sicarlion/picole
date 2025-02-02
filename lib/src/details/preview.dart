@@ -11,22 +11,62 @@ import 'package:picole/ui/details/ui_preview.dart';
 
 class ImagePreviewPage extends StatefulWidget {
   final Post post;
+  final User client;
   final bool isFeatured;
 
   const ImagePreviewPage(
-      {super.key, required this.post, required this.isFeatured});
+      {super.key,
+      required this.post,
+      required this.client,
+      required this.isFeatured});
 
   @override
   State<ImagePreviewPage> createState() => ImagePreviewPageState();
 }
 
 class ImagePreviewPageState extends State<ImagePreviewPage> {
+  final TextEditingController commentController = TextEditingController();
+
+  List<Comment>? comments;
+  bool isCommenting = false;
   bool isDownloading = false;
   bool isDownloaded = false;
 
   @override
   Widget build(BuildContext context) {
-    return uiPreview(context, this, widget.post, widget.isFeatured);
+    return uiPreview(context, this, widget);
+  }
+
+  @override
+  void initState() {
+    getComments();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    commentController.dispose();
+    super.dispose();
+  }
+
+  void addComment(String postId, String userId, String value) async {
+    setState(() {
+      commentController.text = '';
+      isCommenting = true;
+    });
+    await Comment.add(postId, userId, value);
+    getComments();
+    setState(() {
+      isCommenting = false;
+    });
+  }
+
+  void getComments() async {
+    final commentsData = await Comment.get(widget.post.id);
+    if (comments != null && comments!.isNotEmpty) comments!.clear();
+    setState(() {
+      comments = commentsData.reversed.toList();
+    });
   }
 
   void download(Post post) async {

@@ -20,3 +20,25 @@ double getWidthScale(BuildContext context, double widthScale) {
 
   return scaledWidth;
 }
+
+String timeAgo(String timestamp) {
+  if (timestamp == '') {
+    return 'Somewhen in the time.';
+  }
+  DateTime dateTime = DateTime.parse(timestamp).toUtc();
+  DateTime now = DateTime.now().toUtc();
+
+  Duration difference = now.difference(dateTime);
+
+  if (difference.inSeconds < 60) {
+    return '${difference.inSeconds} seconds ago';
+  } else if (difference.inMinutes < 60) {
+    return '${difference.inMinutes} minutes ago';
+  } else if (difference.inHours < 24) {
+    return '${difference.inHours} hours ago';
+  } else if (difference.inDays < 7) {
+    return '${difference.inDays} days ago';
+  } else {
+    return '${(difference.inDays / 7).floor()} weeks ago';
+  }
+}

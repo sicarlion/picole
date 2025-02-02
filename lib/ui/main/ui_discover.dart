@@ -169,6 +169,7 @@ _buildFeaturedPost(BuildContext context, DiscoverPageState state) {
                         MaterialPageRoute(
                           builder: (context) => ImagePreviewPage(
                             post: state.featured!,
+                            client: state.client!,
                             isFeatured: true,
                           ),
                         ),
@@ -312,6 +313,7 @@ Widget _buildFeeds(BuildContext context, DiscoverPageState state) {
               MaterialPageRoute(
                 builder: (context) => ImagePreviewPage(
                   post: state.posts![index],
+                  client: state.client!,
                   isFeatured: false,
                 ),
               ),
