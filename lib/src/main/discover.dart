@@ -35,7 +35,7 @@ class DiscoverPageState extends State<DiscoverPage> {
 
   void _initialize(BuildContext context) async {
     _validateVersion(context);
-    await _validateCredentials(context);
+    if (context.mounted) await _validateCredentials(context);
     if (context.mounted) {
       _getClient(context);
       _getConfig(context);
@@ -49,12 +49,14 @@ class DiscoverPageState extends State<DiscoverPage> {
     try {
       client = await Client.restore();
       if (client == null) {
+        setObsolete(false);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const WelcomePage()),
         );
       }
     } catch (e) {
+      setObsolete(false);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const WelcomePage()),
@@ -62,16 +64,15 @@ class DiscoverPageState extends State<DiscoverPage> {
     }
   }
 
-  void _validateVersion(context) async {
+  Future<void> _validateVersion(context) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
-    String version = packageInfo.version;
-    String buildNumber = packageInfo.buildNumber;
+    int buildNumber = int.parse(packageInfo.buildNumber);
 
     final meta = await supabase.from('appmeta').select('meta, value');
-    final minVersion = meta[0]['value'];
+    int minVersion = meta[0]['value'];
 
-    if ("$version+$buildNumber" != minVersion) {
+    if (buildNumber < minVersion) {
       saveCredentials('', '');
       setObsolete(true);
       Navigator.pushReplacement(

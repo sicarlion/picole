@@ -3,7 +3,7 @@ description: "A centralized image board for Artists to share their works!"
 
 publish_to: 'none' 
 
-version: 0.0.2+1
+version: 0.0.3+8
 
 environment:
   sdk: ^3.6.0
