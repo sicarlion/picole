@@ -7,6 +7,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:picole/solution/database.dart';
+import 'package:picole/src/main/discover.dart';
 import 'package:picole/ui/details/ui_preview.dart';
 
 class ImagePreviewPage extends StatefulWidget {
@@ -32,6 +33,7 @@ class ImagePreviewPageState extends State<ImagePreviewPage> {
   bool isCommenting = false;
   bool isDownloading = false;
   bool isDownloaded = false;
+  bool deleteConfirmation = false;
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +70,25 @@ class ImagePreviewPageState extends State<ImagePreviewPage> {
     setState(() {
       comments = commentsData.reversed.toList();
     });
+  }
+
+  void deletePost() async {
+    if (deleteConfirmation == false) {
+      if (!mounted) return;
+      setState(() {
+        deleteConfirmation = true;
+      });
+      return;
+    }
+
+    await widget.post.delete();
+
+    if (!mounted) return;
+    Navigator.popUntil(context, (route) => route.isFirst);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => DiscoverPage()),
+    );
   }
 
   void download(Post post) async {

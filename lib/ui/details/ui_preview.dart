@@ -1,9 +1,11 @@
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:picole/solution/provider.dart';
 import 'package:picole/solution/tools.dart';
 import 'package:picole/src/details/preview.dart';
 import 'package:picole/src/details/viewer.dart';
+import 'package:provider/provider.dart';
 
 Widget uiPreview(BuildContext context, ImagePreviewPageState state,
     ImagePreviewPage widget) {
@@ -16,7 +18,7 @@ Widget uiPreview(BuildContext context, ImagePreviewPageState state,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildCustomAppBar(context),
+              _buildCustomAppBar(context, state, widget),
               _buildPreviewer(context, widget),
               _buildMeta(context, widget, state),
               _buildComments(context, widget, state),
@@ -371,7 +373,10 @@ _buildComments(BuildContext context, ImagePreviewPage widget,
   );
 }
 
-Widget _buildCustomAppBar(BuildContext context) {
+Widget _buildCustomAppBar(BuildContext context, ImagePreviewPageState state,
+    ImagePreviewPage widget) {
+  final provider = Provider.of<GlobalProvider>(context, listen: false);
+
   return Padding(
     padding: EdgeInsets.all(8),
     child: SafeArea(
@@ -381,9 +386,28 @@ Widget _buildCustomAppBar(BuildContext context) {
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
             ),
+            Spacer(),
+            if (state.deleteConfirmation)
+              Text(
+                "Click again?",
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium!
+                    .copyWith(color: Colors.red),
+              ),
+            if (widget.post.artist.id == provider.client!.id)
+              IconButton(
+                onPressed: () {
+                  state.deletePost();
+                },
+                icon: Icon(
+                  Icons.delete_outline_sharp,
+                  color: Colors.red,
+                ),
+              ),
           ],
         ),
       ),

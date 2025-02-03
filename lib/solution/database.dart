@@ -355,6 +355,11 @@ class Post {
     });
   }
 
+  Future<void> delete() async {
+    image.drop();
+    await supabase.from('posts').delete().eq('id', id);
+  }
+
   Asset get thumb => image.toThumb();
 }
 
@@ -475,23 +480,4 @@ class Comment {
       'post_id': post.id,
     });
   }
-}
-
-class Asset {
-  /// The URL of the Image
-  String url;
-  List<double> dimension;
-
-  Asset({required this.url, required this.dimension});
-
-  Asset toThumb() {
-    // Find the position to insert the new string
-    String insertion = "c_thumb,q_10,f_auto/";
-    String updatedUrl = url.replaceFirst("/v", "/${insertion}v");
-
-    return Asset(url: updatedUrl, dimension: dimension);
-  }
-
-  /// Drop the value of asset and remove the image from database.
-  void drop() {}
 }
