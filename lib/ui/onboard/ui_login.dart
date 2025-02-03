@@ -83,30 +83,49 @@ Widget _buildLoginForm(BuildContext context, LoginPageState state) {
         cursorColor: Colors.grey,
       ),
       SizedBox(height: 16.0),
-      TextField(
-        obscureText: true,
-        controller: state.password,
-        onChanged: (value) {
-          state.setError(0);
-        },
-        decoration: InputDecoration(
-          label: Text(
-            'Password',
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge!
-                .copyWith(color: Colors.grey),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: TextField(
+              obscureText: !state.visibility,
+              controller: state.password,
+              onChanged: (value) {
+                state.setError(0);
+              },
+              decoration: InputDecoration(
+                label: Text(
+                  'Password',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge!
+                      .copyWith(color: Colors.grey),
+                ),
+                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                      width: 2.0,
+                      color: state.hasError ? Colors.red : Colors.grey),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(width: 2.0, color: Colors.white),
+                ),
+              ),
+              cursorColor: Colors.grey,
+            ),
           ),
-          floatingLabelBehavior: FloatingLabelBehavior.auto,
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-                width: 2.0, color: state.hasError ? Colors.red : Colors.grey),
+          SizedBox(width: 8.0),
+          Padding(
+            padding: EdgeInsets.only(top: 8.0),
+            child: IconButton(
+              onPressed: () => state.setVisibility(!state.visibility),
+              icon: Icon(
+                !state.visibility ? Icons.visibility : Icons.visibility_off,
+                color: Colors.white,
+              ),
+            ),
           ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(width: 2.0, color: Colors.white),
-          ),
-        ),
-        cursorColor: Colors.grey,
+        ],
       ),
       SizedBox(height: 32.0),
       TextButton(
@@ -136,6 +155,24 @@ Widget _buildLoginForm(BuildContext context, LoginPageState state) {
             ),
           ],
         ),
+      ),
+      SizedBox(height: 16.0),
+      Row(
+        children: [
+          Checkbox(
+            value: true,
+            onChanged: null,
+          ),
+          Expanded(
+            child: Text(
+              "By signing in, you agreed to our Privacy Policy and accept that we will collect your cookies data as the development test ran.",
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge!
+                  .copyWith(color: Colors.white),
+            ),
+          ),
+        ],
       ),
       SizedBox(height: 16.0),
       if (state.hasError)

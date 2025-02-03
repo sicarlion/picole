@@ -16,6 +16,7 @@ class LoginPageState extends State<LoginPage> {
   final TextEditingController username = TextEditingController();
   final TextEditingController password = TextEditingController();
 
+  bool visibility = false;
   bool hasError = false;
   String errorMessage = '';
 
@@ -34,6 +35,12 @@ class LoginPageState extends State<LoginPage> {
           hasError = true;
           errorMessage = "No such account existed.";
       }
+    });
+  }
+
+  void setVisibility(bool value) {
+    setState(() {
+      visibility = value;
     });
   }
 
