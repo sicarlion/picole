@@ -108,8 +108,12 @@ Widget _buildNotifications(BuildContext context, NotificationsPageState state) {
                                   width: 52,
                                   height: 52,
                                   child: Center(
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2),
+                                    child: Transform.scale(
+                                      scale: 0.7,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
                                 )
                           : null,
