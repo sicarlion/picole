@@ -103,6 +103,8 @@ class DiscoverPageState extends State<DiscoverPage> {
 
   void _getClient(context) async {
     final res = await Client.session();
+
+    if (!mounted) return;
     setState(() {
       client = res;
     });
@@ -131,6 +133,7 @@ class DiscoverPageState extends State<DiscoverPage> {
   void getFeeds(context) async {
     final res = await Post.bulk();
 
+    if (!mounted) return;
     setState(() {
       posts = res;
     });
@@ -138,6 +141,8 @@ class DiscoverPageState extends State<DiscoverPage> {
 
   void _getConfig(BuildContext context) async {
     final resIsCached = await getNetworkCache();
+
+    if (!mounted) return;
     setState(() {
       isCached = resIsCached;
     });
