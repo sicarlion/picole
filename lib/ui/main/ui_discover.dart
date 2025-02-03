@@ -56,7 +56,7 @@ Widget uiDiscover(BuildContext context, DiscoverPageState state) {
               ],
             ),
           ),
-          _buildBottomNavBar(context),
+          _buildBottomNavBar(context, state),
         ],
       ),
     ),
@@ -420,7 +420,7 @@ Widget _buildFeeds(BuildContext context, DiscoverPageState state) {
   );
 }
 
-Widget _buildBottomNavBar(BuildContext context) {
+Widget _buildBottomNavBar(BuildContext context, DiscoverPageState state) {
   return Align(
     alignment: Alignment.bottomCenter,
     child: Padding(

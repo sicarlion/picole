@@ -37,7 +37,7 @@ Widget uiCreate(BuildContext context, CreatePageState state) {
               ),
             ),
           ),
-          _buildBottomNavBar(context)
+          _buildBottomNavBar(context),
         ],
       ),
     ),

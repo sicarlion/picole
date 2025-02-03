@@ -295,8 +295,8 @@ _buildComments(BuildContext context, ImagePreviewPage widget,
               ),
               GestureDetector(
                 onTap: () {
-                  state.addComment(widget.post.id, widget.client.id,
-                      state.commentController.text);
+                  state.addComment(
+                      widget.post, widget.client, state.commentController.text);
                 },
                 child: state.isCommenting
                     ? Transform.scale(

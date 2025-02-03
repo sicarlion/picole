@@ -164,17 +164,23 @@ class Client {
 
 enum NotificationStatus { sent, read, hide }
 
+enum NotificationType { post, commision, system }
+
 class Notifications {
   String id;
   String message;
-  String timestamp;
+  String? timestamp;
   NotificationStatus status;
+  NotificationType type;
+  String? postId;
 
   Notifications({
     required this.id,
     required this.message,
-    this.timestamp = '',
+    this.timestamp,
     this.status = NotificationStatus.hide,
+    this.type = NotificationType.system,
+    this.postId,
   });
 
   factory Notifications.fromMap(Map<String, dynamic> map) {
@@ -182,9 +188,9 @@ class Notifications {
       id: map['id'].toString(),
       message: map['message'] ?? '',
       timestamp: map['timestamp'] ?? '',
-      status: map['status'] == 'sent'
-          ? NotificationStatus.sent
-          : NotificationStatus.read,
+      status: NotificationStatus.values.byName(map['status']),
+      type: NotificationType.values.byName(map['type']),
+      postId: map['post_id'] ?? '',
     );
   }
 }
@@ -200,6 +206,7 @@ class NotificationController {
 
     final supabase = Supabase.instance.client;
 
+    _fetch();
     supabase
         .channel('public:notifications')
         .onPostgresChanges(
@@ -221,9 +228,10 @@ class NotificationController {
     if (_userId == null) return;
 
     final supabase = Supabase.instance.client;
+
     final response = await supabase
         .from('notifications')
-        .select('id, user_id, message, timestamp, status')
+        .select('id, user_id, message, timestamp, status, type, post_id')
         .eq('user_id', _userId!);
 
     List<Notifications> newNotifications = response
@@ -313,28 +321,11 @@ class Post {
     PostgrestMap raw = await supabase
         .from('posts')
         .select(
-            'id, user_id, image, dimension, title, description, rating, categories, tags')
+            'id, title, user_id (id, email, name, display, avatar), image, description, rating, categories, tags , dimension, score, timestamp')
         .eq('id', id)
         .single();
-    double x = raw['dimension'][0].toDouble();
-    double y = raw['dimension'][1].toDouble();
-    List<double> dimension = [x, y];
 
-    final artist = await Users.getId(raw['user_id']);
-
-    return Post(
-      id: raw['id'],
-      artist: artist,
-      image: Asset(
-        url: raw['image'],
-        dimension: dimension,
-      ),
-      title: raw['title'],
-      description: raw['description'],
-      rating: Rating.values.byName(raw['rating']),
-      categories: Categories.values.byName(raw['categories']),
-      tags: raw['tags'],
-    );
+    return Post.convert(raw);
   }
 
   static Future<List<Post>> bulk() async {
@@ -469,11 +460,19 @@ class Comment {
     return comments;
   }
 
-  static Future<void> add(String postId, String userId, String value) async {
+  static Future<void> add(Post post, User client, String value) async {
     await supabase.from('comments').insert({
-      'post_id': postId,
-      'user_id': userId,
+      'post_id': post.id,
+      'user_id': client.id,
       'value': value,
+    });
+
+    await supabase.from('notifications').insert({
+      'user_id': post.artist.id,
+      'message':
+          '"$value", says ${client.display} on your "${post.title}" post.',
+      'type': NotificationType.post.name,
+      'post_id': post.id,
     });
   }
 }

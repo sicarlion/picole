@@ -1,11 +1,15 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:picole/solution/database.dart';
+import 'package:picole/solution/provider.dart';
 import 'package:picole/solution/tools.dart';
+import 'package:picole/src/details/preview.dart';
 import 'package:picole/src/main/create.dart';
 import 'package:picole/src/main/discover.dart';
 import 'package:picole/src/main/notifications.dart';
 import 'package:picole/src/main/settings.dart';
+import 'package:provider/provider.dart';
 
 Widget uiNotifications(BuildContext context, NotificationsPageState state) {
   return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -42,7 +46,7 @@ Widget _buildNotifications(BuildContext context, NotificationsPageState state) {
       builder: (context, notifications, _) {
         if (notifications.isEmpty) {
           return Text(
-            "No new notifications.",
+            "Its either you don't have notifications, or the app twerking.",
             style: TextStyle(color: Colors.white),
           );
         }
@@ -50,21 +54,70 @@ Widget _buildNotifications(BuildContext context, NotificationsPageState state) {
           itemCount: notifications.length,
           itemBuilder: (context, index) {
             final notification = notifications[index];
-            return Opacity(
-              opacity: notifications[index].status == NotificationStatus.sent
-                  ? 1.0
-                  : 0.3,
-              child: ListTile(
-                title: Text(
-                  notification.message,
-                  style: TextStyle(color: Colors.white),
-                ),
-                subtitle: Text(
-                  timeAgo(notification.timestamp),
-                  style: TextStyle(color: Colors.white70),
-                ),
-                contentPadding: EdgeInsets.only(bottom: 16),
-              ),
+            return FutureBuilder(
+              future: notification.type == NotificationType.post
+                  ? Post.find(notification.postId!)
+                  : Future.value(null),
+              builder: (context, snapshot) {
+                return Opacity(
+                  opacity:
+                      notifications[index].status == NotificationStatus.sent
+                          ? 1.0
+                          : 0.5,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (notification.type == NotificationType.post) {
+                        final client =
+                            Provider.of<GlobalProvider>(context, listen: false)
+                                .client;
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => ImagePreviewPage(
+                                post: snapshot.data!,
+                                client: client!,
+                                isFeatured: false),
+                          ),
+                        );
+                      }
+                    },
+                    child: ListTile(
+                      title: Text(
+                        notification.message,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        timeAgo(notification.timestamp!),
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                      trailing: notification.type == NotificationType.post
+                          ? snapshot.connectionState == ConnectionState.done &&
+                                  snapshot.hasData
+                              ? SizedBox(
+                                  width: 52,
+                                  height: 52,
+                                  child: ClipRRect(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(6)),
+                                    child: CachedNetworkImage(
+                                      imageUrl: snapshot.data!.image.url,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(
+                                  width: 52,
+                                  height: 52,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  ),
+                                )
+                          : null,
+                      contentPadding: EdgeInsets.only(bottom: 16),
+                    ),
+                  ),
+                );
+              },
             );
           },
         );

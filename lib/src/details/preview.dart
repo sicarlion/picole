@@ -14,11 +14,12 @@ class ImagePreviewPage extends StatefulWidget {
   final User client;
   final bool isFeatured;
 
-  const ImagePreviewPage(
-      {super.key,
-      required this.post,
-      required this.client,
-      required this.isFeatured});
+  const ImagePreviewPage({
+    super.key,
+    required this.post,
+    required this.client,
+    required this.isFeatured,
+  });
 
   @override
   State<ImagePreviewPage> createState() => ImagePreviewPageState();
@@ -49,12 +50,12 @@ class ImagePreviewPageState extends State<ImagePreviewPage> {
     super.dispose();
   }
 
-  void addComment(String postId, String userId, String value) async {
+  void addComment(Post post, User client, String value) async {
     setState(() {
       commentController.text = '';
       isCommenting = true;
     });
-    await Comment.add(postId, userId, value);
+    await Comment.add(post, client, value);
     getComments();
     setState(() {
       isCommenting = false;

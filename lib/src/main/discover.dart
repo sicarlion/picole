@@ -103,9 +103,17 @@ class DiscoverPageState extends State<DiscoverPage> {
 
   void _getClient(context) async {
     final res = await Client.session();
+    setState(() {
+      client = res;
+    });
+
+    if (res != null) {
+      NotificationController.startListening(res.id);
+    }
+
     final provider = Provider.of<GlobalProvider>(context, listen: false);
 
-    if (provider.featured != null) {
+    if (provider.client != null) {
       if (!mounted) return;
       setState(() {
         client = provider.client;
@@ -117,7 +125,6 @@ class DiscoverPageState extends State<DiscoverPage> {
       setState(() {
         client = res;
       });
-      NotificationController.startListening(client!.id);
     }
   }
 
