@@ -91,6 +91,11 @@ class ImagePreviewPageState extends State<ImagePreviewPage> {
     );
   }
 
+  void deleteComment(Comment comment) async {
+    await comment.delete();
+    getComments();
+  }
+
   void download(Post post) async {
     setState(() {
       isDownloading = true;

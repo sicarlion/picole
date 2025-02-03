@@ -246,6 +246,8 @@ _buildMeta(BuildContext context, ImagePreviewPage widget,
 
 _buildComments(BuildContext context, ImagePreviewPage widget,
     ImagePreviewPageState state) {
+  final provider = Provider.of<GlobalProvider>(context, listen: false);
+
   return Padding(
     padding: toScale(context, 6, 3, 6, 5),
     child: Align(
@@ -317,55 +319,69 @@ _buildComments(BuildContext context, ImagePreviewPage widget,
                   color: Colors.white,
                 )
               : Column(
-                  children: state.comments!.map((comment) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(top: 4.0),
-                            child: CircleAvatar(
-                              radius: 14,
-                              backgroundColor: Colors.grey,
-                              child: ClipOval(
-                                child: CachedNetworkImage(
-                                  imageUrl: comment.user
-                                      .avatar, // Assuming comment has an avatar
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.cover,
+                  children: state.comments!.map(
+                    (comment) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(top: 4.0),
+                              child: CircleAvatar(
+                                radius: 14,
+                                backgroundColor: Colors.grey,
+                                child: ClipOval(
+                                  child: CachedNetworkImage(
+                                    imageUrl: comment.user
+                                        .avatar, // Assuming comment has an avatar
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(width: 16.0),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${comment.user.display} · ${timeAgo(comment.timestamp)}", // Assuming comment has a username
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall!
-                                      .copyWith(color: Colors.grey),
-                                  textAlign: TextAlign.left,
-                                ),
-                                Text(
-                                  comment
-                                      .value, // Assuming comment has a text field
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  overflow: TextOverflow.clip,
-                                  textAlign: TextAlign.left,
-                                ),
-                              ],
+                            SizedBox(width: 16.0),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${comment.user.display} · ${timeAgo(comment.timestamp)}", // Assuming comment has a username
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall!
+                                        .copyWith(color: Colors.grey),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                  Text(
+                                    comment
+                                        .value, // Assuming comment has a text field
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                    overflow: TextOverflow.clip,
+                                    textAlign: TextAlign.left,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
+                            if (provider.client != null &&
+                                comment.user.id == provider.client!.id)
+                              IconButton(
+                                onPressed: () {
+                                  state.deleteComment(comment);
+                                },
+                                icon: Icon(
+                                  Icons.close,
+                                  color: Colors.red,
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ).toList(),
                 ),
         ],
       ),

@@ -427,11 +427,13 @@ class Users {
 }
 
 class Comment {
+  int id;
   User user;
   String value;
   String timestamp;
 
   Comment({
+    required this.id,
     required this.user,
     required this.value,
     this.timestamp = '',
@@ -455,6 +457,7 @@ class Comment {
         display: item['user_id']['display'],
       );
       final comment = Comment(
+        id: item['id'],
         user: userData,
         value: item['value'],
         timestamp: item['timestamp'],
@@ -479,5 +482,9 @@ class Comment {
       'type': NotificationType.post.name,
       'post_id': post.id,
     });
+  }
+
+  Future<void> delete() async {
+    await supabase.from('comments').delete().eq('id', id);
   }
 }
