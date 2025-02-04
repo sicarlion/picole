@@ -6,12 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:picole/solution/database.dart';
+import 'package:picole/solution/provider.dart';
 import 'package:picole/solution/tools.dart';
 import 'package:picole/src/details/preview.dart';
 import 'package:picole/src/main/create.dart';
 import 'package:picole/src/main/discover.dart';
 import 'package:picole/src/main/notifications.dart';
 import 'package:picole/src/main/settings.dart';
+import 'package:provider/provider.dart';
 
 Widget uiDiscover(BuildContext context, DiscoverPageState state) {
   return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -310,8 +312,13 @@ Widget _buildFeeds(BuildContext context, DiscoverPageState state) {
       ),
     );
   }
+  final provider = Provider.of<GlobalProvider>(context, listen: false);
 
-  if (state.posts!.isEmpty) {
+  List<Post> data = provider.config[1]
+      ? state.posts!.where((post) => post.categories == Categories.art).toList()
+      : state.posts!;
+
+  if (data.isEmpty) {
     return const SliverToBoxAdapter(
       child: Center(
         child: Padding(
@@ -328,101 +335,106 @@ Widget _buildFeeds(BuildContext context, DiscoverPageState state) {
       crossAxisCount: row,
       mainAxisSpacing: 16,
       crossAxisSpacing: 16,
-      childCount: state.posts!.length,
+      childCount: data.length,
       itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ImagePreviewPage(
-                  post: state.posts![index],
-                  client: state.client!,
-                  isFeatured: false,
+        return Consumer<GlobalProvider>(
+          builder: (context, value, child) {
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ImagePreviewPage(
+                      post: data[index],
+                      client: state.client!,
+                      isFeatured: false,
+                    ),
+                  ),
+                );
+              },
+              child: SizedBox(
+                width: data[index].image.dimension[0],
+                height: data[index].image.dimension[1] /
+                    data[index].image.dimension[0] *
+                    ((width - (getWidthScale(context, 5) * 2)) / row - 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                  child: Stack(
+                    children: [
+                      // The main image
+                      Container(
+                        constraints: BoxConstraints.expand(),
+                        child: value.config[0]
+                            ? CachedNetworkImage(
+                                imageUrl: data[index].thumb.url,
+                                fit: BoxFit.cover,
+                                fadeOutDuration: Duration(milliseconds: 200),
+                                fadeInDuration: Duration(milliseconds: 200),
+                              )
+                            : FadeInImage(
+                                placeholder:
+                                    AssetImage('assets/placeholder.png'),
+                                image: NetworkImage(data[index].thumb.url),
+                                width: data[index].image.dimension[0],
+                                height: data[index].image.dimension[1] /
+                                    data[index].image.dimension[0] *
+                                    ((width - (getWidthScale(context, 5) * 2)) /
+                                            row -
+                                        8),
+                                fit: BoxFit.cover,
+                                fadeOutDuration: Duration(milliseconds: 200),
+                                fadeInDuration: Duration(milliseconds: 200),
+                              ),
+                      ),
+
+                      if (data[index].rating != Rating.general)
+                        Positioned.fill(
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                            child: Icon(
+                              Icons.visibility_off,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      Container(
+                        constraints: BoxConstraints.expand(),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment(0.0, 0.0),
+                            end: Alignment(-0.5, 1.0),
+                            colors: [
+                              Colors.transparent,
+                              Color.fromRGBO(0, 0, 0, 0.4)
+                            ],
+                          ),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              CircleAvatar(
+                                radius: 10,
+                                foregroundImage: CachedNetworkImageProvider(
+                                  data[index].artist.avatar,
+                                ),
+                              ),
+                              SizedBox(width: 8.0),
+                              Text(
+                                data[index].artist.display,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
           },
-          child: SizedBox(
-            width: state.posts![index].image.dimension[0],
-            height: state.posts![index].image.dimension[1] /
-                state.posts![index].image.dimension[0] *
-                ((width - (getWidthScale(context, 5) * 2)) / row - 8),
-            child: ClipRRect(
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-              child: Stack(
-                children: [
-                  // The main image
-                  Container(
-                    constraints: BoxConstraints.expand(),
-                    child: state.isCached
-                        ? CachedNetworkImage(
-                            imageUrl: state.posts![index].thumb.url,
-                            fit: BoxFit.cover,
-                            fadeOutDuration: Duration(milliseconds: 200),
-                            fadeInDuration: Duration(milliseconds: 200),
-                          )
-                        : FadeInImage(
-                            placeholder: AssetImage('assets/placeholder.png'),
-                            image: NetworkImage(state.posts![index].thumb.url),
-                            width: state.posts![index].image.dimension[0],
-                            height: state.posts![index].image.dimension[1] /
-                                state.posts![index].image.dimension[0] *
-                                ((width - (getWidthScale(context, 5) * 2)) /
-                                        row -
-                                    8),
-                            fit: BoxFit.cover,
-                            fadeOutDuration: Duration(milliseconds: 200),
-                            fadeInDuration: Duration(milliseconds: 200),
-                          ),
-                  ),
-
-                  if (state.posts![index].rating != Rating.general)
-                    Positioned.fill(
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                        child: Icon(
-                          Icons.visibility_off,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  Container(
-                    constraints: BoxConstraints.expand(),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment(0.0, 0.0),
-                        end: Alignment(-0.5, 1.0),
-                        colors: [
-                          Colors.transparent,
-                          Color.fromRGBO(0, 0, 0, 0.4)
-                        ],
-                      ),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          CircleAvatar(
-                            radius: 10,
-                            foregroundImage: CachedNetworkImageProvider(
-                              state.posts![index].artist.avatar,
-                            ),
-                          ),
-                          SizedBox(width: 8.0),
-                          Text(
-                            state.posts![index].artist.display,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         );
       },
     ),

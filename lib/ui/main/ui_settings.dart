@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:picole/solution/database.dart';
+import 'package:picole/solution/provider.dart';
+import 'package:picole/solution/shared.dart' as shared;
 import 'package:picole/solution/tools.dart';
 import 'package:picole/src/main/create.dart';
 import 'package:picole/src/main/discover.dart';
 import 'package:picole/src/main/notifications.dart';
 import 'package:picole/src/main/settings.dart';
+import 'package:provider/provider.dart';
 
 Widget uiSettings(BuildContext context, SettingsPageState state) {
   return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -40,25 +43,31 @@ Widget _buildSettings(BuildContext context, SettingsPageState state) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      _buildToggle(
-        context,
-        title: "Fetch image with cache (experimental)",
-        description:
-            "Cache all downloaded image for faster loading and reduce data usage, in cost of laggy perfomance.",
-        value: state.isCached,
-        onChanged: (bool newValue) {
-          state.setConfig(context, newValue);
-        },
+      Consumer<GlobalProvider>(
+        builder: (context, value, child) => _buildToggle(
+          context,
+          title: "Fetch image with cache (experimental)",
+          description:
+              "Cache all downloaded image for faster loading and reduce data usage, in cost of laggy perfomance.",
+          value: value.config[0],
+          onChanged: (bool newValue) {
+            value.setConfig(0, newValue);
+            shared.setConfig(value.config);
+          },
+        ),
       ),
       SizedBox(height: 16),
-      _buildToggle(
-        context,
-        title: "Hide general posts from Discover",
-        description: "Maybe, just maybe, you need to keep everything clean~?",
-        value: true,
-        onChanged: (bool newValue) {
-          true;
-        },
+      Consumer<GlobalProvider>(
+        builder: (context, value, child) => _buildToggle(
+          context,
+          title: "Hide general posts from Discover",
+          description: "Maybe, just maybe, you need to keep everything clean~?",
+          value: value.config[1],
+          onChanged: (bool newValue) {
+            value.setConfig(1, newValue);
+            shared.setConfig(value.config);
+          },
+        ),
       ),
     ],
   );

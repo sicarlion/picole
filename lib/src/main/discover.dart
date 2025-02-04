@@ -17,7 +17,7 @@ class DiscoverPage extends StatefulWidget {
 class DiscoverPageState extends State<DiscoverPage> {
   User? client;
   Post? featured;
-  bool isCached = true;
+  List<bool> config = [true, true];
 
   List<Post>? posts;
   bool isUpdated = false;
@@ -141,11 +141,12 @@ class DiscoverPageState extends State<DiscoverPage> {
   }
 
   void _getConfig(BuildContext context) async {
-    final resIsCached = await getNetworkCache();
+    final provider = Provider.of<GlobalProvider>(context, listen: false);
+    final config = await getConfig();
 
     if (!mounted) return;
     setState(() {
-      isCached = resIsCached;
+      provider.setConfigBulk(config);
     });
   }
 }

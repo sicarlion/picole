@@ -42,3 +42,11 @@ String timeAgo(String timestamp) {
     return '${(difference.inDays / 7).floor()} weeks ago';
   }
 }
+
+List<String> toStringList(List<bool> boolList) {
+  return boolList.map((bool value) => value.toString()).toList();
+}
+
+List<bool> toBoolList(List<String> stringList) {
+  return stringList.map((String value) => value == 'true').toList();
+}

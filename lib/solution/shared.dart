@@ -1,3 +1,4 @@
+import 'package:picole/solution/tools.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> saveCredentials(name, password) async {
@@ -35,23 +36,15 @@ Future<bool> isObsolete() async {
   }
 }
 
-Future<void> setNetworkCache(bool status) async {
+Future<void> setConfig(List<bool> config) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  if (status == false) {
-    await prefs.setString('network_cache', 'false');
-  } else {
-    await prefs.setString('network_cache', 'true');
-  }
+  prefs.setStringList('config', toStringList(config));
 }
 
-Future<bool> getNetworkCache() async {
+Future<List<bool>> getConfig() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  String status = prefs.getString('network_cache') ?? '';
+  List<String>? status = prefs.getStringList('config') ?? ['true', 'true'];
 
-  if (status == 'false') {
-    return false;
-  } else {
-    return true;
-  }
+  return toBoolList(status);
 }
