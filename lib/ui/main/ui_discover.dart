@@ -352,19 +352,17 @@ Widget _buildFeeds(BuildContext context, DiscoverPageState state) {
               borderRadius: BorderRadius.all(Radius.circular(8)),
               child: Stack(
                 children: [
-                  state.isCached
-                      ? Container(
-                          constraints: BoxConstraints.expand(),
-                          child: CachedNetworkImage(
+                  // The main image
+                  Container(
+                    constraints: BoxConstraints.expand(),
+                    child: state.isCached
+                        ? CachedNetworkImage(
                             imageUrl: state.posts![index].thumb.url,
                             fit: BoxFit.cover,
                             fadeOutDuration: Duration(milliseconds: 200),
                             fadeInDuration: Duration(milliseconds: 200),
-                          ),
-                        )
-                      : Container(
-                          constraints: BoxConstraints.expand(),
-                          child: FadeInImage(
+                          )
+                        : FadeInImage(
                             placeholder: AssetImage('assets/placeholder.png'),
                             image: NetworkImage(state.posts![index].thumb.url),
                             width: state.posts![index].image.dimension[0],
@@ -377,7 +375,18 @@ Widget _buildFeeds(BuildContext context, DiscoverPageState state) {
                             fadeOutDuration: Duration(milliseconds: 200),
                             fadeInDuration: Duration(milliseconds: 200),
                           ),
+                  ),
+
+                  if (state.posts![index].rating != Rating.general)
+                    Positioned.fill(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                        child: Icon(
+                          Icons.visibility_off,
+                          color: Colors.white,
                         ),
+                      ),
+                    ),
                   Container(
                     constraints: BoxConstraints.expand(),
                     decoration: BoxDecoration(
